@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build & tests (Python)
+        if: hashFiles('requirements.txt', 'pyproject.toml') != ''
+        run: |
+          pip install -r requirements.txt 2>/dev/null || pip install -e .
+          pip install pytest
+          pytest -q
+
+      - name: Rien à tester pour l'instant
+        if: hashFiles('Makefile', 'requirements.txt', 'pyproject.toml', 'package.json', 'Cargo.toml') == ''
+        run: echo "Aucune stack détectée (pas encore de Makefile/requirements.txt/package.json/Cargo.toml). CI inactive en attendant du code."
+
+  Lint-Coding-Style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Super-Linter
+        uses: super-linter/super-linter/slim@v6
+        env:
+          DEFAULT_BRANCH: main
+          VALIDATE_ALL_CODEBASE: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
