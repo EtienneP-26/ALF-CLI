@@ -1,12 +1,12 @@
 services:
   env:
-    image: epitechcontent/epitest-docker:latest
+    build: .
+    network_mode: host
     volumes:
       - .:/mnt/delivery
     working_dir: /mnt/delivery
     stdin_open: true
     tty: true
-    command: bash
 
   lint:
     image: ghcr.io/super-linter/super-linter:slim-v6
