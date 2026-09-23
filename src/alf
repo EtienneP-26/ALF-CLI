@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+
+from OllamaTools.ConnectionOllama import client
+from OllamaTools.ListAvailableModel import list_models, show_models
+from OllamaTools.ResponseHandle import getResponse
+from CliTools.Cli import inputPrompt, thinkVisual, outputPrint, printLogo, choiceVisual
+import os
+import ollama
+
+def clear_terminal():
+     os.system('cls' if os.name == 'nt' else 'clear')
+
+clear_terminal()
+
+ModelNames = list_models(client)[0]
+ModelInfos = list_models(client)[1]
+
+History: str = ""
+
+model = "gemma4:e2b-mt"
+prompt: str = ""
+
+if __name__=="__main__":
+    printLogo()
+    while prompt != "/exit":
+        prompt = inputPrompt()
+        if prompt.strip() == "/exit":
+            break
+        if prompt.strip() == "/model":
+            model = choiceVisual("\nChose a model: ", ModelNames, "gemma4:e2b")
+            outputPrint(f"Model changed for: `{model}`.")
+            continue
+        if prompt.startswith("/model"):
+            nmodel = prompt.split()[1]
+            if nmodel in ModelNames:
+                model = nmodel
+                outputPrint(f"Model changed for: `{model}`")
+            else:
+                outputPrint(f"Model `{nmodel}` not available", color="#ed0e0e")
+            continue
+        response = thinkVisual(getResponse, client=client, model=model,  prompt=prompt, history=History, think=False)
+        outputPrint(response=f"\n{response}\n")
+        History += prompt + "\n" + response + "\n"
+    ollama.generate(model=model, keep_alive=0)
