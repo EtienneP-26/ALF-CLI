@@ -9,4 +9,4 @@ logoAlf: str = """
 |__/  |__/|________/|__/
 """
 
-listCommands: list[str] = ["/help", "/clear", "/exit", "/model"]
+listCommands: list[str] = ["/exit", "/model"] # /help /clear etc.

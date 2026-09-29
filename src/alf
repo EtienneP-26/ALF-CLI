@@ -39,6 +39,6 @@ if __name__=="__main__":
                 outputPrint(f"Model `{nmodel}` not available", color="#ed0e0e")
             continue
         response = thinkVisual(getResponse, client=client, model=model,  prompt=prompt, history=History, think=False)
-        outputPrint(response=f"\n{response}\n")
+        outputPrint(response=f"{response}")
         History += prompt + "\n" + response + "\n"
     ollama.generate(model=model, keep_alive=0)
