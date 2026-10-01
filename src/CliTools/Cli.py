@@ -9,11 +9,27 @@ from rich.markdown import Markdown, CodeBlock
 from rich.syntax import Syntax
 from rich.theme import Theme
 from rich.panel import Panel
+from rich.text import Text
+from difflib import unified_diff
+from os import path
 from Variables import logoAlf, listCommands
 
 class NoBgCodeBlock(CodeBlock):
-    def __rich_console__(self, console, options):
+    def __rich_console__ (self, console, options):
         code = str(self.text).rstrip()
+        if self.lexer_name == "diff":
+            out = Text()
+            for line in code.split("\n"):
+                if line.startswith("+") and not line.startswith("+++"):
+                    out.append(line + "\n", style="green on #0d2b0d")
+                elif line.startswith("-") and not line.startswith("---"):
+                    out.append(line + "\n", style="red on #2b0d0d")
+                elif line.startswith("@@"):
+                    out.append(line + "\n", style="cyan")
+                else:
+                    out.append(line + "\n")
+            yield out
+            return
         yield Syntax(code, self.lexer_name, theme=self.theme, word_wrap=True, padding=1, background_color="default")
 
 class NoBgMarkdown(Markdown):
@@ -44,11 +60,11 @@ session = PromptSession(
     multiline=True,
     key_bindings=kb,
     completer=WordCompleter(listCommands, sentence=True),
-    bottom_toolbar=HTML(" <b>Enter</b> envoyer · <b>Alt+Enter</b> nouvelle ligne · <b>/help</b>"),
+    bottom_toolbar=HTML(" <b>Enter</b> send · <b>Alt+Enter</b> new line · <b>/help</b>"),
 )
 
 def printLogo():
-    console.print(Panel(f"[bold #1800f7] {logoAlf} [/]\n[dim]Tape /help pour l'aide[/]", border_style="#1800f7", expand=False))
+    console.print(Panel(f"[bold #1800f7] {logoAlf} [/]\n[dim]Type /help for help[/]", border_style="#1800f7", expand=False))
 
 def inputPrompt() -> str:
     console.rule(style="#1800f7")
@@ -57,12 +73,18 @@ def inputPrompt() -> str:
     return prompt
 
 def thinkVisual(mfunction, *args, **kwargs):
-    with console.status("[dim]Réflexion…[/]", spinner="dots", spinner_style="#1800f7"):
+    with console.status("[dim]Thinking…[/]", spinner="dots2", spinner_style="#1800f7"):
+        response = mfunction(*args, **kwargs)
+    return response
+
+def webSearchVisual(mfunction, *args, **kwargs):
+    with console.status("[dim]Searching the web…[/]", spinner="earth", spinner_style="#013220"):
         response = mfunction(*args, **kwargs)
     return response
 
 def outputPrint(response: str, color: str | None = None):
-    response = response.replace("\n", "  \n")
+    if "```" not in response:
+        response = response.replace("\n", "  \n")
     console.print(NoBgMarkdown(response), style=color)
 
 def choiceVisual(message: str, options: list[str], default: str) -> str:
@@ -74,3 +96,14 @@ def choiceVisual(message: str, options: list[str], default: str) -> str:
     )
 
     return result
+
+def confirmVisual(question: str) -> bool:
+    return choiceVisual(f"\n{question}\n", ["yes", "no"], "no") == "yes"
+
+def write_diff(file_path: str, content: str) -> str:
+    old_file = ""
+    if path.exists(file_path):
+        with open(file_path, encoding="utf-8") as f:
+            old_file = f.read()
+    return "\n".join(unified_diff(old_file.splitlines(), content.splitlines(), fromfile=f"a/{file_path}", tofile=f"b/{file_path}", lineterm="",))
+
