@@ -2,10 +2,11 @@
 
 from OllamaTools.ConnectionOllama import client
 from OllamaTools.ListAvailableModel import list_models, show_models
-from OllamaTools.ResponseHandle import getResponse
-from CliTools.Cli import inputPrompt, thinkVisual, outputPrint, printLogo, choiceVisual
+from HandleResponse import handleResponse
+from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, choiceVisual, confirmVisual, write_diff
 import os
 import ollama
+from Variables import tools, available
 
 def clear_terminal():
      os.system('cls' if os.name == 'nt' else 'clear')
@@ -15,13 +16,14 @@ clear_terminal()
 ModelNames = list_models(client)[0]
 ModelInfos = list_models(client)[1]
 
-History: str = ""
+History: list[dict] = []
 
 model = "gemma4:e2b-mt"
 prompt: str = ""
 
 if __name__=="__main__":
     printLogo()
+    total_token_used: int = 0
     while prompt != "/exit":
         prompt = inputPrompt()
         if prompt.strip() == "/exit":
@@ -38,7 +40,21 @@ if __name__=="__main__":
             else:
                 outputPrint(f"Model `{nmodel}` not available", color="#ed0e0e")
             continue
-        response = thinkVisual(getResponse, client=client, model=model,  prompt=prompt, history=History, think=False)
-        outputPrint(response=f"{response}")
-        History += prompt + "\n" + response + "\n"
+        response_history, token_used, = handleResponse(
+                client=client,
+                model=model,
+                prompt=prompt,
+                history=History,
+                tools=tools,
+                available=available,
+                printfunc=outputPrint,
+                difffunc=write_diff,
+                validationfunc=confirmVisual,
+                visualfuncs={"think": thinkVisual, "websearch": webSearchVisual},
+                think=False,
+        )
+        History = response_history
+        print()
+        total_token_used += token_used
+        print('\033[90m' + f"Message: {token_used} Tokens | Total: {total_token_used} Tokens" + '\033[0m')
     ollama.generate(model=model, keep_alive=0)
