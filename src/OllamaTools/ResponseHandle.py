@@ -1,3 +1,4 @@
+from OllamaTools.StreamHandle import collectStream
 
 SystemPrompt: str = """
 You are ALF-CLI, an agentic CLI assistant working in the user's project.
@@ -27,8 +28,9 @@ def getResponse(
     history: list[dict],
     tools: list,
     think: bool = True,
-    loop: bool = False
-):  
+    loop: bool = False,
+    on_text=None,
+):
     messages = [
         {"role": "system", "content": SystemPrompt},
         *history,
@@ -36,9 +38,11 @@ def getResponse(
     if loop == False:
         messages.append({"role": "user", "content": prompt})
 
-    return client.chat(
+    stream = client.chat(
         model=model,
         messages=messages,
         think=think,
         tools=tools,
+        stream=True,
     )
+    return collectStream(stream, on_text)

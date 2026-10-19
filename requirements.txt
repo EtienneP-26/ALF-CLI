@@ -2,3 +2,4 @@ ollama
 rich
 prompt_toolkit
 ddgs
+pytest

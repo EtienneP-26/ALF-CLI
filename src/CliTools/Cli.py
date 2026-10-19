@@ -5,6 +5,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.shortcuts import choice
 from rich.console import Console
+from rich.live import Live
 from rich.markdown import Markdown, CodeBlock
 from rich.syntax import Syntax
 from rich.theme import Theme
@@ -73,19 +74,45 @@ def inputPrompt() -> str:
     return prompt
 
 def thinkVisual(mfunction, *args, **kwargs):
-    with console.status("[dim]Thinking…[/]", spinner="dots2", spinner_style="#1800f7"):
-        response = mfunction(*args, **kwargs)
-    return response
+    """
+    # thinkVisual
+
+    Spinner while the model thinks, then live markdown as its answer streams in.
+
+    ## Args
+    - `mfunction`: the call to run; it must accept an `on_text` callback.
+
+    ## Returns
+    Whatever `mfunction` returns.
+    """
+    status = console.status("[dim]Thinking…[/]", spinner="dots2", spinner_style="#1800f7")
+    live = Live(console=console, refresh_per_second=15, vertical_overflow="visible")
+
+    def onText(text: str):
+        if not live.is_started:
+            status.stop()
+            live.start()
+        live.update(NoBgMarkdown(formatMarkdown(text)))
+
+    status.start()
+    try:
+        return mfunction(*args, on_text=onText, **kwargs)
+    finally:
+        status.stop()
+        live.stop()
 
 def webSearchVisual(mfunction, *args, **kwargs):
     with console.status("[dim]Searching the web…[/]", spinner="earth", spinner_style="#013220"):
         response = mfunction(*args, **kwargs)
     return response
 
-def outputPrint(response: str, color: str | None = None):
+def formatMarkdown(response: str) -> str:
     if "```" not in response:
         response = response.replace("\n", "  \n")
-    console.print(NoBgMarkdown(response), style=color)
+    return response
+
+def outputPrint(response: str, color: str | None = None):
+    console.print(NoBgMarkdown(formatMarkdown(response)), style=color)
 
 def choiceVisual(message: str, options: list[str], default: str) -> str:
     choice_options = [(option, option.capitalize()) for option in options]

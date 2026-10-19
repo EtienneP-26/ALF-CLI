@@ -26,7 +26,7 @@ def  handleResponse(
     while response.message.tool_calls:
         if loop >= MAXLOOP:
             prompt = "Max tools loop call reached please wrap that up no more tool call for this loop"
-            response = getResponse(client, model, prompt, history, [], think)
+            response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=[], think=think)
             break
         history.append(response.message)
         for call in response.message.tool_calls or []:
@@ -71,15 +71,11 @@ def  handleResponse(
                     "tool_name": call.function.name, 
                     "content": f"refused by the user",
                 })
-            if response["message"]["content"]:
-                printfunc(response["message"]["content"])
         total_token_used += countTokens(response)
         response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, loop=True)
         loop += 1
 
-    to_print: str = response["message"]["content"]
-    printfunc(to_print)
-    history.append({"role": "assistant", "content": to_print})
+    history.append({"role": "assistant", "content": response["message"]["content"]})
 
     total_token_used += countTokens(response)
     return history, total_token_used
