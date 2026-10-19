@@ -15,7 +15,7 @@ jobs:
         run: |
           pip install -r requirements.txt 2>/dev/null || pip install -e .
           pip install pytest
-          pytest -q
+          pytest -q || [ $? -eq 5 ]
 
       - name: Rien à tester pour l'instant
         if: hashFiles('Makefile', 'requirements.txt', 'pyproject.toml', 'package.json', 'Cargo.toml') == ''
