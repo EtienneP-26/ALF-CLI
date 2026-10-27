@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
 from OllamaTools.ConnectionOllama import client
-from OllamaTools.ListAvailableModel import list_models, show_models
+from OllamaTools.ListAvailableModel import list_models
 from HandleResponse import handleResponse
-from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, choiceVisual, confirmVisual, write_diff
+from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff
+from Commands import State, handleCommand
+import Commands.builtin
 import os
 import ollama
 from Variables import tools, available
@@ -13,36 +15,22 @@ def clear_terminal():
 
 clear_terminal()
 
-ModelNames = list_models(client)[0]
-ModelInfos = list_models(client)[1]
-
 History: list[dict] = []
-
-model = "gemma4:e2b-mt"
-prompt: str = ""
 
 if __name__=="__main__":
     printLogo()
+    state = State(model="gemma4:e2b-mt", modelNames=list_models(client)[0])
     total_token_used: int = 0
-    while prompt != "/exit":
+    while state.running:
         prompt = inputPrompt()
-        if prompt.strip() == "/exit":
-            break
-        if prompt.strip() == "/model":
-            model = choiceVisual("\nChose a model: ", ModelNames, "gemma4:e2b")
-            outputPrint(f"Model changed for: `{model}`.")
-            continue
-        if prompt.startswith("/model"):
-            nmodel = prompt.split()[1]
-            if nmodel in ModelNames:
-                model = nmodel
-                outputPrint(f"Model changed for: `{model}`")
-            else:
-                outputPrint(f"Model `{nmodel}` not available", color="#ed0e0e")
+        message = handleCommand(prompt, state)
+        if message is not None:
+            if message:
+                outputPrint(message)
             continue
         response_history, token_used, = handleResponse(
                 client=client,
-                model=model,
+                model=state.model,
                 prompt=prompt,
                 history=History,
                 tools=tools,
@@ -57,4 +45,4 @@ if __name__=="__main__":
         print()
         total_token_used += token_used
         print('\033[90m' + f"Message: {token_used} Tokens | Total: {total_token_used} Tokens" + '\033[0m')
-    ollama.generate(model=model, keep_alive=0)
+    ollama.generate(model=state.model, keep_alive=0)

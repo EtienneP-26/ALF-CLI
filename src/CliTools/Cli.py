@@ -13,7 +13,8 @@ from rich.panel import Panel
 from rich.text import Text
 from difflib import unified_diff
 from os import path
-from Variables import logoAlf, listCommands
+from Variables import logoAlf
+from Commands import commandNames
 
 class NoBgCodeBlock(CodeBlock):
     def __rich_console__ (self, console, options):
@@ -60,7 +61,7 @@ def _(event):
 session = PromptSession(
     multiline=True,
     key_bindings=kb,
-    completer=WordCompleter(listCommands, sentence=True),
+    completer=WordCompleter(commandNames, sentence=True),
     bottom_toolbar=HTML(" <b>Enter</b> send · <b>Alt+Enter</b> new line · <b>/help</b>"),
 )
 

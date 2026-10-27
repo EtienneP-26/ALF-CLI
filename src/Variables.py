@@ -11,7 +11,6 @@ logoAlf: str = """
 |__/  |__/|________/|__/
 """
 
-listCommands: list[str] = ["/exit", "/model"] # /help /clear etc.
 available = {
     "write_file": write_file,
     "read_file": read_file,

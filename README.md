@@ -1,6 +1,6 @@
 # **ALF-CLI**
 
-> Description rapide de ce que fait le projet et pourquoi ?
+> This is an agentic CLI assistant powered by various tools. It operates by using defined tools to perform tasks, making it a powerful agent for command-line operations.
 
 ## Sommaire
 
@@ -27,8 +27,13 @@ cd ALF-CLI
  
 ## Utilisation
 ```bash
-./nom_du_binaire [options] arguments
+python3 src/alf [--model NAME] [--allowed-dir DIR]...
 ```
+- `--model NAME` : modèle Ollama (défaut `gemma4:e2b-mt`).
+- `--allowed-dir DIR` : dossier où `read_file`/`write_file` ont le droit d'aller (répétable, défaut : dossier courant). Hors de ces dossiers, l'accès est refusé.
+- Ollama injoignable ou modèle absent : message clair et code de sortie 1.
+- Une saisie vide est ignorée.
+- Mémoire : l'historique (50 derniers messages) et le profil sont enregistrés dans `~/.alf/` (`$ALF_HOME` pour changer) et rechargés au lancement. `/profile cle valeur` ajoute une info de profil, `/profile` l'affiche.
 
 Exemples:
 ```bash
