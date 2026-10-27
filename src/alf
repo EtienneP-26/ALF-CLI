@@ -7,6 +7,7 @@ from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint,
 from Commands import State, handleCommand
 import Commands.builtin
 import os
+import sys
 import ollama
 from Variables import tools, available
 
@@ -27,6 +28,12 @@ if __name__=="__main__":
         if message is not None:
             if message:
                 outputPrint(message)
+            continue
+        if not prompt.strip():
+            lines = prompt.split('\n')
+            nlines = len(lines) + 3
+            sys.stdout.write('\x1b[%sA' % (nlines - 1))
+            sys.stdout.write('\r')
             continue
         response_history, token_used, = handleResponse(
                 client=client,
