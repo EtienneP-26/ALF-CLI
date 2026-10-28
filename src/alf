@@ -5,6 +5,7 @@ from OllamaTools.ListAvailableModel import list_models
 from HandleResponse import handleResponse
 from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff
 from Commands import State, handleCommand
+from Memory import saveConversation
 import Commands.builtin
 import os
 import sys
@@ -15,8 +16,6 @@ def clear_terminal():
      os.system('cls' if os.name == 'nt' else 'clear')
 
 clear_terminal()
-
-History: list[dict] = []
 
 if __name__=="__main__":
     printLogo()
@@ -39,7 +38,7 @@ if __name__=="__main__":
                 client=client,
                 model=state.model,
                 prompt=prompt,
-                history=History,
+                history=state.history,
                 tools=tools,
                 available=available,
                 printfunc=outputPrint,
@@ -48,7 +47,8 @@ if __name__=="__main__":
                 visualfuncs={"think": thinkVisual, "websearch": webSearchVisual},
                 think=False,
         )
-        History = response_history
+        state.history = response_history
+        saveConversation(state.conversation, state.history)
         print()
         total_token_used += token_used
         print('\033[90m' + f"Message: {token_used} Tokens | Total: {total_token_used} Tokens" + '\033[0m')

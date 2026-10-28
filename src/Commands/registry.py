@@ -1,11 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
+from Memory import newConversation
 
 @dataclass
 class State:
     model: str
     modelNames: list[str]
     running: bool = True
+    conversation: dict = field(default_factory=newConversation)
+    history: list = field(default_factory=list)
 
 _commands: dict[str, tuple[Callable, str]] = {}
 

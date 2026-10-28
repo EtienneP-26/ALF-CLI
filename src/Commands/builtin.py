@@ -1,5 +1,6 @@
 from CliTools.Cli import choiceVisual
 from Commands import command, commandHelp
+from Memory import newConversation, renameConversation
 
 @command("/exit", "Quit ALF-CLI")
 def exitCommand(state, args):
@@ -19,3 +20,21 @@ def modelCommand(state, args):
     else:
         return f"Model `{args[0]}` not available"
     return f"Model changed for: `{state.model}`"
+
+@command("/new", "Start a new conversation")
+def newCommand(state, args):
+    state.conversation = newConversation()
+    state.history = []
+    return "New conversation started"
+
+@command("/rename", "Rename the current conversation: `/rename <title>`")
+def renameCommand(state, args):
+    if not args:
+        return "Usage: `/rename <title>`"
+    if not state.history:
+        return "Nothing to rename yet: send a message first"
+    try:
+        state.conversation["title"] = renameConversation(state.conversation["id"], " ".join(args))
+    except ValueError as e:
+        return str(e)
+    return f"Conversation renamed: `{state.conversation['title']}`"
