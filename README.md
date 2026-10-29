@@ -33,7 +33,7 @@ python3 src/alf [--model NAME] [--allowed-dir DIR]...
 - `--allowed-dir DIR` : dossier où `read_file`/`write_file` ont le droit d'aller (répétable, défaut : dossier courant). Hors de ces dossiers, l'accès est refusé.
 - Ollama injoignable ou modèle absent : message clair et code de sortie 1.
 - Une saisie vide est ignorée.
-- Mémoire : l'historique (50 derniers messages) et le profil sont enregistrés dans `~/.alf/` (`$ALF_HOME` pour changer) et rechargés au lancement. `/profile cle valeur` ajoute une info de profil, `/profile` l'affiche.
+- Mémoire : chaque conversation est enregistrée en entier dans `~/.alf/conversations/<id>.json` (`$ALF_HOME` pour changer), avec son id, son titre (tiré du premier message) et ses dates de création et de dernière activité. Une nouvelle conversation démarre à chaque lancement. `/new` en démarre une autre, `/rename <titre>` renomme la conversation courante, `/conversations` liste les conversations enregistrées et `/resume <numéro>` en rouvre une. Au lancement, `--continue` rouvre la dernière conversation et `--resume <id ou numéro>` en rouvre une précise.
 
 Exemples:
 ```bash
