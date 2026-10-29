@@ -25,6 +25,8 @@ def modelCommand(state, args):
 def newCommand(state, args):
     state.conversation = newConversation()
     state.history = []
+    clear_terminal()
+    printLogo()
     return "New conversation started"
 
 @command("/rename", "Rename the current conversation: `/rename <title>`")
