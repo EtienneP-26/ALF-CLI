@@ -1,6 +1,6 @@
 from CliTools.Cli import choiceVisual
 from Commands import command, commandHelp
-from Memory import findConversation, listConversations, newConversation, renameConversation
+from Memory import deleteConversation, findConversation, listConversations, newConversation, renameConversation
 
 @command("/exit", "Quit ALF-CLI")
 def exitCommand(state, args):
@@ -56,3 +56,25 @@ def resumeCommand(state, args):
         return "Usage: `/resume <number>`, numbers are listed by `/conversations`"
     state.resume(conversation)
     return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)"
+
+def _confirm(question: str) -> bool:
+    try:
+        return input(question).strip().lower() in ("y", "yes")
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return False
+
+@command("/delete", "Delete a saved conversation: `/delete <number>` (see `/conversations`)")
+def deleteCommand(state, args):
+    if len(args) != 1:
+        return "Usage: `/delete <number>`, numbers are listed by `/conversations`"
+    conversation = findConversation(args[0])
+    if conversation is None:
+        return f"Conversation `{args[0]}` not found"
+    if not _confirm(f"Delete `{conversation['title'] or '(untitled)'}`? [y/N] "):
+        return "Deletion cancelled"
+    if not deleteConversation(conversation["id"]):
+        return "Cannot delete the conversation"
+    if conversation["id"] == state.conversation["id"]:
+        newCommand(state, [])
+    return f"Conversation deleted: `{conversation['title']}`"

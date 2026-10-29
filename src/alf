@@ -6,7 +6,7 @@ from HandleResponse import handleResponse
 from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff
 from Commands import State, handleCommand
 from CliTools.Args import parseArgs
-from Memory import findConversation, saveConversation
+from Memory import findConversation, saveConversation, savePendingPrompt
 import Commands.builtin
 import os
 import sys
@@ -43,6 +43,7 @@ if __name__=="__main__":
             sys.stdout.write('\x1b[%sA' % (nlines - 1))
             sys.stdout.write('\r')
             continue
+        savePendingPrompt(state.conversation, state.history, prompt)
         response_history, token_used, = handleResponse(
                 client=client,
                 model=state.model,

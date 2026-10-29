@@ -156,6 +156,10 @@ def saveConversation(conversation: dict, messages: list):
     _write(conversation)
 
 
+def savePendingPrompt(conversation: dict, messages: list, prompt: str):
+    saveConversation(conversation, [*messages, {"role": "user", "content": prompt}])
+
+
 def loadConversation(conversationId: str) -> dict | None:
     """# Read one conversation from disk
 
@@ -201,6 +205,17 @@ def renameConversation(conversationId: str, title: str) -> str:
     conversation["title"] = title
     _write(conversation)
     return title
+
+
+def deleteConversation(conversationId: str) -> bool:
+    path = _path(conversationId)
+    if loadConversation(conversationId) is None:
+        return False
+    try:
+        os.remove(path)
+    except OSError:
+        return False
+    return True
 
 
 def listConversations() -> list[dict]:
