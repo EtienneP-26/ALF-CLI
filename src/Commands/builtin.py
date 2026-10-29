@@ -1,4 +1,4 @@
-from CliTools.Cli import choiceVisual
+from CliTools.Cli import choiceVisual, printLogo, clear_terminal
 from Commands import command, commandHelp
 from Memory import deleteConversation, findConversation, listConversations, newConversation, renameConversation
 

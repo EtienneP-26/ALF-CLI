@@ -3,7 +3,7 @@
 from OllamaTools.ConnectionOllama import client
 from OllamaTools.ListAvailableModel import list_models
 from HandleResponse import handleResponse
-from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff
+from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff, clear_terminal
 from Commands import State, handleCommand
 from CliTools.Args import parseArgs
 from Memory import findConversation, saveConversation, savePendingPrompt
@@ -12,9 +12,6 @@ import os
 import sys
 import ollama
 from Variables import tools, available
-
-def clear_terminal():
-     os.system('cls' if os.name == 'nt' else 'clear')
 
 clear_terminal()
 

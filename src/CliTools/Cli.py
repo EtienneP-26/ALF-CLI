@@ -13,6 +13,7 @@ from rich.panel import Panel
 from rich.text import Text
 from difflib import unified_diff
 from os import path
+import os
 from Variables import logoAlf
 from Commands import commandNames
 
@@ -135,3 +136,5 @@ def write_diff(file_path: str, content: str) -> str:
             old_file = f.read()
     return "\n".join(unified_diff(old_file.splitlines(), content.splitlines(), fromfile=f"a/{file_path}", tofile=f"b/{file_path}", lineterm="",))
 
+def clear_terminal():
+    os.system('cls' if os.name == 'nt' else 'clear')
