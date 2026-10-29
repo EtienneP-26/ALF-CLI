@@ -5,7 +5,8 @@ from OllamaTools.ListAvailableModel import list_models
 from HandleResponse import handleResponse
 from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff
 from Commands import State, handleCommand
-from Memory import saveConversation
+from CliTools.Args import parseArgs
+from Memory import findConversation, saveConversation
 import Commands.builtin
 import os
 import sys
@@ -18,8 +19,16 @@ def clear_terminal():
 clear_terminal()
 
 if __name__=="__main__":
+    args = parseArgs()
     printLogo()
     state = State(model="gemma4:e2b-mt", modelNames=list_models(client)[0])
+    reference = "1" if args.continue_ else args.resume
+    if reference is not None:
+        conversation = findConversation(reference)
+        if conversation is None:
+            sys.exit(f"No conversation found for `{reference}`. Type `/conversations` in ALF-CLI to list them.")
+        state.resume(conversation)
+        outputPrint(f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)")
     total_token_used: int = 0
     while state.running:
         prompt = inputPrompt()

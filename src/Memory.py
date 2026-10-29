@@ -224,3 +224,12 @@ def listConversations() -> list[dict]:
             conversation.pop("messages")
             conversations.append(conversation)
     return sorted(conversations, key=lambda c: c["updated_at"], reverse=True)
+
+
+def findConversation(reference: str) -> dict | None:
+    if ID_PATTERN.fullmatch(reference):
+        return loadConversation(reference)
+    conversations = listConversations()
+    if reference.isdigit() and 1 <= int(reference) <= len(conversations):
+        return loadConversation(conversations[int(reference) - 1]["id"])
+    return None

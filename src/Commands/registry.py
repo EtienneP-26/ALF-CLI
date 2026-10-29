@@ -10,6 +10,10 @@ class State:
     conversation: dict = field(default_factory=newConversation)
     history: list = field(default_factory=list)
 
+    def resume(self, conversation: dict):
+        self.conversation = conversation
+        self.history = conversation["messages"]
+
 _commands: dict[str, tuple[Callable, str]] = {}
 
 def command(name: str, help: str):
