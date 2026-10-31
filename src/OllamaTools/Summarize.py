@@ -6,8 +6,6 @@ from Memory import saveConversation
 from Variables import COMPACT_RATIO
 
 KEEP_MESSAGES: int = 6
-TOOL_CLIP: int = 300
-MESSAGE_CLIP: int = 1500
 INSTRUCTION: str = (
     "You write the memory of a conversation between a user and an assistant. "
     "Answer with a short list that keeps: the user's goal, the decisions, the files touched, "
@@ -20,25 +18,33 @@ REMINDER: str = "Now write the updated list. Keep every verbatim fact (codes, na
 
 
 def _clip(text: str, size: int) -> str:
-    return text if len(text) <= size else text[:size] + "[...]"
+    return text if len(text) <= size else text[:max(size - 5, 0)] + "[...]"
 
 
-def _render(message) -> str:
+def _parts(message) -> tuple[str, str, str]:
     role = _field(message, "role")
-    size = TOOL_CLIP if role == "tool" else MESSAGE_CLIP
     calls = [str(_field(_field(c, "function"), "name")) for c in _field(message, "tool_calls") or []]
     suffix = f" [tools: {', '.join(calls)}]" if calls else ""
-    return f"{role}: {_clip(_field(message, 'content') or '', size)}{suffix}"
+    return f"{role}: ", _field(message, "content") or "", suffix
+
+
+def _shares(sizes: list[int], space: int) -> list[int]:
+    shares = [0] * len(sizes)
+    for k, i in enumerate(sorted(range(len(sizes)), key=sizes.__getitem__)):
+        shares[i] = min(sizes[i], space // (len(sizes) - k))
+        space -= shares[i]
+    return shares
 
 
 def summaryInput(oldSummary: str, messages: list, budget: int) -> str:
     room = int((budget - budget // 8 - BASELINE_TOKENS - 400) * CHARS_PER_TOKEN * 0.8)
     old = _clip(oldSummary, room // 3)
-    transcript = "\n".join(_render(m) for m in messages)
-    space = max(room - len(old), 200)
-    if len(transcript) > space:
-        transcript = transcript[: space // 4] + "\n[...]\n" + transcript[-(space * 3 // 4):]
-    return (f"Previous summary:\n{old}\n\n" if old else "") + f"Conversation:\n{transcript}\n\n{REMINDER}"
+    parts = [_parts(m) for m in messages]
+    head = (f"Previous summary:\n{old}\n\n" if old else "") + "Conversation:\n"
+    fixed = len(head) + len(REMINDER) + 2 + sum(len(p) + len(x) + 1 for p, _, x in parts)
+    shares = _shares([len(c) for _, c, _ in parts], max(room - fixed, 0))
+    transcript = "\n".join(p + _clip(c, n) + x for (p, c, x), n in zip(parts, shares))
+    return f"{head}{transcript}\n\n{REMINDER}"
 
 
 def summarize(client, model: str, oldSummary: str, messages: list, budget: int) -> str:
