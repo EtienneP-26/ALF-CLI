@@ -1,8 +1,12 @@
 from OllamaTools.ResponseHandle import getResponse
 from Variables import DEFAULT_MAX_TOKENS
 
-def countTokens(response) -> int:
-    return int(getattr(response, "prompt_eval_count", None) or 0) + int(getattr(response, "eval_count", None) or 0)
+def countTokens(response) -> int | None:
+    prompt = getattr(response, "prompt_eval_count", None)
+    generated = getattr(response, "eval_count", None)
+    if prompt is None and generated is None:
+        return None
+    return int(prompt or 0) + int(generated or 0)
 
 def  handleResponse(
     client, 
@@ -17,11 +21,10 @@ def  handleResponse(
     visualfuncs: dict,
     think: bool = True,
     max_tokens: int = DEFAULT_MAX_TOKENS,
-) -> tuple[list[dict], int]:
+) -> tuple[list[dict], int | None]:
 
     MAXLOOP = 10
     loop = 0
-    total_token_used: int = 0
     response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, max_tokens=max_tokens)
     history.append({"role": "user", "content": prompt})
 
@@ -73,11 +76,9 @@ def  handleResponse(
                     "tool_name": call.function.name, 
                     "content": f"refused by the user",
                 })
-        total_token_used += countTokens(response)
         response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, loop=True, max_tokens=max_tokens)
         loop += 1
 
     history.append({"role": "assistant", "content": response["message"]["content"]})
 
-    total_token_used += countTokens(response)
-    return history, total_token_used
+    return history, countTokens(response)

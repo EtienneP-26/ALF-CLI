@@ -11,10 +11,13 @@ class State:
     conversation: dict = field(default_factory=newConversation)
     history: list = field(default_factory=list)
     maxTokens: int = DEFAULT_MAX_TOKENS
+    maxTokensFixed: bool = False
+    contextUsed: int | None = None
 
     def resume(self, conversation: dict):
         self.conversation = conversation
         self.history = conversation["messages"]
+        self.contextUsed = None
 
 _commands: dict[str, tuple[Callable, str]] = {}
 

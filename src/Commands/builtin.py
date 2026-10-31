@@ -1,5 +1,8 @@
 from CliTools.Cli import choiceVisual, printLogo, clear_terminal
 from Commands import command, commandHelp
+from Context import contextLine
+from OllamaTools.ConnectionOllama import client
+from OllamaTools.ModelContext import resolveMaxTokens
 from Memory import deleteConversation, findConversation, listConversations, newConversation, renameConversation
 
 @command("/exit", "Quit ALF-CLI")
@@ -19,12 +22,16 @@ def modelCommand(state, args):
         state.model = args[0]
     else:
         return f"Model `{args[0]}` not available"
+    if not state.maxTokensFixed:
+        state.maxTokens = resolveMaxTokens(client, state.model)
+    state.contextUsed = None
     return f"Model changed for: `{state.model}`"
 
 @command("/new", "Start a new conversation")
 def newCommand(state, args):
     state.conversation = newConversation()
     state.history = []
+    state.contextUsed = None
     clear_terminal()
     printLogo()
     return "New conversation started"
@@ -57,7 +64,7 @@ def resumeCommand(state, args):
     if conversation is None:
         return "Usage: `/resume <number>`, numbers are listed by `/conversations`"
     state.resume(conversation)
-    return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)"
+    return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)\n{contextLine(None, state.maxTokens, state.history)}"
 
 def _confirm(question: str) -> bool:
     try:

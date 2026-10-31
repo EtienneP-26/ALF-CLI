@@ -11,14 +11,24 @@ import Commands.builtin
 import os
 import sys
 import ollama
+import httpx
 from Variables import tools, available
+from OllamaTools.StreamHandle import EmptyResponseError
+from OllamaTools.ModelContext import resolveMaxTokens
+from Context import contextLine, formatKTokens, isNearBudget, estimateTokens
 
 clear_terminal()
 
 if __name__=="__main__":
     args = parseArgs()
     printLogo()
-    state = State(model="gemma4:e2b-mt", modelNames=list_models(client)[0], maxTokens=args.max_tokens)
+    try:
+        modelNames = list_models(client)[0]
+    except (ConnectionError, httpx.HTTPError) as e:
+        sys.exit(f"Cannot reach Ollama: {e}")
+    model = "gemma4:e2b-mt"
+    fixed = args.max_tokens is not None
+    state = State(model=model, modelNames=modelNames, maxTokens=args.max_tokens if fixed else resolveMaxTokens(client, model), maxTokensFixed=fixed)
     reference = "1" if args.continue_ else args.resume
     if reference is not None:
         conversation = findConversation(reference)
@@ -26,7 +36,7 @@ if __name__=="__main__":
             sys.exit(f"No conversation found for `{reference}`. Type `/conversations` in ALF-CLI to list them.")
         state.resume(conversation)
         outputPrint(f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)")
-    total_token_used: int = 0
+        print('\033[90m' + contextLine(None, state.maxTokens, state.history) + '\033[0m')
     while state.running:
         prompt = inputPrompt()
         message = handleCommand(prompt, state)
@@ -41,7 +51,9 @@ if __name__=="__main__":
             sys.stdout.write('\r')
             continue
         savePendingPrompt(state.conversation, state.history, prompt)
-        response_history, token_used, = handleResponse(
+        historySize = len(state.history)
+        try:
+            response_history, token_used = handleResponse(
                 client=client,
                 model=state.model,
                 prompt=prompt,
@@ -54,10 +66,21 @@ if __name__=="__main__":
                 visualfuncs={"think": thinkVisual, "websearch": webSearchVisual},
                 think=False,
                 max_tokens=state.maxTokens,
-        )
+            )
+        except (ollama.ResponseError, ConnectionError, httpx.HTTPError) as e:
+            del state.history[historySize:]
+            outputPrint(f"Ollama error, the conversation is unchanged: {e}")
+            continue
+        except EmptyResponseError as e:
+            del state.history[historySize:]
+            outputPrint(f"{e} The conversation is unchanged.")
+            continue
+        state.contextUsed = token_used
         state.history = response_history
         saveConversation(state.conversation, state.history)
         print()
-        total_token_used += token_used
-        print('\033[90m' + f"Message: {token_used} Tokens | Total: {total_token_used} Tokens" + '\033[0m')
+        print('\033[90m' + contextLine(state.contextUsed, state.maxTokens, state.history) + '\033[0m')
+        used = state.contextUsed if state.contextUsed is not None else estimateTokens(state.history)
+        if isNearBudget(used, state.maxTokens):
+            outputPrint(f"Warning: the context is over 80% of the budget ({formatKTokens(state.maxTokens)}). Use `/new` or raise `--max-tokens`.")
     ollama.generate(model=state.model, keep_alive=0)
