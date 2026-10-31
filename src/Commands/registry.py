@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Callable
 from Memory import newConversation
+from Variables import DEFAULT_MAX_TOKENS
 
 @dataclass
 class State:
@@ -9,6 +10,7 @@ class State:
     running: bool = True
     conversation: dict = field(default_factory=newConversation)
     history: list = field(default_factory=list)
+    maxTokens: int = DEFAULT_MAX_TOKENS
 
     def resume(self, conversation: dict):
         self.conversation = conversation
