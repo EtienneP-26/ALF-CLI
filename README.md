@@ -32,6 +32,8 @@ python3 src/alf [--model NAME] [--allowed-dir DIR]... [--max-tokens N]
 - `--model NAME` : modèle Ollama (défaut `gemma4:e2b-mt`).
 - `--allowed-dir DIR` : dossier où `read_file`/`write_file` ont le droit d'aller (répétable, défaut : dossier courant). Hors de ces dossiers, l'accès est refusé.
 - `--max-tokens N` : budget de tokens du contexte envoyé au modèle (`num_ctx` d'Ollama), défaut : le contexte max du modèle Ollama (8192 si inconnu), minimum 4096. C'est le plafond du contexte : une ligne `Context: 0.8k/131.1k (0%)` (en kTokens) s'affiche après chaque tour, avec une alerte à partir de 80 %.
+- `--auto` : `run_command` et `write_file` s'exécutent sans confirmation (mode `ask` par défaut). `/mode [ask|auto]` ouvre un choix entre `ask` et `auto`, ou change directement le mode.
+- `plan_task` : outil du modèle qui présente un plan numéroté avant une tâche à plusieurs étapes ; il passe par la même approbation (refus possible en `ask`).
 - Ollama injoignable ou modèle absent : message clair et code de sortie 1.
 - Une saisie vide est ignorée.
 - Mémoire : chaque conversation est enregistrée en entier dans `~/.alf/conversations/<id>.json` (`$ALF_HOME` pour changer), avec son id, son titre (tiré du premier message) et ses dates de création et de dernière activité. Une nouvelle conversation démarre à chaque lancement. `/new` en démarre une autre, `/rename <titre>` renomme la conversation courante, `/conversations` liste les conversations enregistrées et `/resume <numéro>` en rouvre une. Au lancement, `--continue` rouvre la dernière conversation et `--resume <id ou numéro>` en rouvre une précise.
