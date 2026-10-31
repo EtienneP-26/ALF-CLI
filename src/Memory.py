@@ -133,10 +133,10 @@ def newConversation() -> dict:
     Nothing is written to disk until the first `saveConversation`.
 
     ## Returns:
-        A dict with `id`, `title` (empty), `created_at`, `updated_at` and `messages`.
+        A dict with `id`, `title` (empty), `created_at`, `updated_at`, `messages`, `summary` (empty) and `summarizedCount` (0).
     """
     now = _now()
-    return {"id": uuid.uuid4().hex, "title": "", "created_at": now, "updated_at": now, "messages": []}
+    return {"id": uuid.uuid4().hex, "title": "", "created_at": now, "updated_at": now, "messages": [], "summary": "", "summarizedCount": 0}
 
 
 def saveConversation(conversation: dict, messages: list):

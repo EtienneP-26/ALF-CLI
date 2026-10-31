@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Callable
+from Context import buildContext
 from Memory import newConversation
 from Variables import DEFAULT_MAX_TOKENS
 
@@ -13,11 +14,19 @@ class State:
     maxTokens: int = DEFAULT_MAX_TOKENS
     maxTokensFixed: bool = False
     contextUsed: int | None = None
+    totalTokens: int = 0
 
     def resume(self, conversation: dict):
         self.conversation = conversation
         self.history = conversation["messages"]
         self.contextUsed = None
+        summary, count = conversation.get("summary"), conversation.get("summarizedCount")
+        conversation["summary"] = summary if isinstance(summary, str) else ""
+        valid = isinstance(count, int) and not isinstance(count, bool)
+        conversation["summarizedCount"] = min(max(count, 0), len(self.history)) if valid else 0
+
+    def contextMessages(self) -> list:
+        return buildContext(self.history, self.conversation.get("summary", ""), self.conversation.get("summarizedCount", 0), self.maxTokens)
 
 _commands: dict[str, tuple[Callable, str]] = {}
 
