@@ -3,7 +3,7 @@
 from OllamaTools.ConnectionOllama import client
 from OllamaTools.ListAvailableModel import list_models
 from HandleResponse import handleResponse
-from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, outputPrint, printLogo, confirmVisual, write_diff, clear_terminal
+from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, compressVisual, outputPrint, printLogo, confirmVisual, write_diff, clear_terminal
 from Commands import State, handleCommand
 from CliTools.Args import parseArgs
 from Memory import findConversation, saveConversation, savePendingPrompt
@@ -16,6 +16,8 @@ from Variables import tools, available
 from OllamaTools.StreamHandle import EmptyResponseError
 from OllamaTools.ModelContext import resolveMaxTokens
 from Context import contextLine, formatKTokens, isNearBudget, estimateTokens
+from OllamaTools.Summarize import compactIfNeeded
+from Variables import COMPACT_RATIO
 
 clear_terminal()
 
@@ -36,7 +38,7 @@ if __name__=="__main__":
             sys.exit(f"No conversation found for `{reference}`. Type `/conversations` in ALF-CLI to list them.")
         state.resume(conversation)
         outputPrint(f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)")
-        print('\033[90m' + contextLine(None, state.maxTokens, state.history) + '\033[0m')
+        print('\033[90m' + contextLine(None, state.maxTokens, state.contextMessages(), hidden=state.conversation['summarizedCount']) + '\033[0m')
     while state.running:
         prompt = inputPrompt()
         message = handleCommand(prompt, state)
@@ -50,10 +52,15 @@ if __name__=="__main__":
             sys.stdout.write('\x1b[%sA' % (nlines - 1))
             sys.stdout.write('\r')
             continue
+        promptTokens = estimateTokens([{"role": "user", "content": prompt}])
+        if promptTokens > COMPACT_RATIO * state.maxTokens:
+            outputPrint(f"This message is too long for the context ({formatKTokens(promptTokens)}/{formatKTokens(state.maxTokens)}). Shorten it or raise --max-tokens.")
+            continue
+        compactIfNeeded(client, state.model, state.conversation, state.history, prompt, state.maxTokens, outputPrint, compressVisual)
         savePendingPrompt(state.conversation, state.history, prompt)
         historySize = len(state.history)
         try:
-            response_history, token_used = handleResponse(
+            response_history, token_used, generated = handleResponse(
                 client=client,
                 model=state.model,
                 prompt=prompt,
@@ -66,6 +73,8 @@ if __name__=="__main__":
                 visualfuncs={"think": thinkVisual, "websearch": webSearchVisual},
                 think=False,
                 max_tokens=state.maxTokens,
+                summary=state.conversation["summary"],
+                summarizedCount=state.conversation["summarizedCount"],
             )
         except (ollama.ResponseError, ConnectionError, httpx.HTTPError) as e:
             del state.history[historySize:]
@@ -76,11 +85,13 @@ if __name__=="__main__":
             outputPrint(f"{e} The conversation is unchanged.")
             continue
         state.contextUsed = token_used
+        state.totalTokens += generated or 0
         state.history = response_history
         saveConversation(state.conversation, state.history)
+        context = state.contextMessages()
         print()
-        print('\033[90m' + contextLine(state.contextUsed, state.maxTokens, state.history) + '\033[0m')
-        used = state.contextUsed if state.contextUsed is not None else estimateTokens(state.history)
+        print('\033[90m' + contextLine(state.contextUsed, state.maxTokens, context, generated, state.totalTokens, state.conversation['summarizedCount']) + '\033[0m')
+        used = state.contextUsed if state.contextUsed is not None else estimateTokens(context)
         if isNearBudget(used, state.maxTokens):
             outputPrint(f"Warning: the context is over 80% of the budget ({formatKTokens(state.maxTokens)}). Use `/new` or raise `--max-tokens`.")
     ollama.generate(model=state.model, keep_alive=0)

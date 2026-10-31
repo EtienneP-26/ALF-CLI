@@ -8,6 +8,10 @@ def countTokens(response) -> int | None:
         return None
     return int(prompt or 0) + int(generated or 0)
 
+def countGenerated(response) -> int | None:
+    generated = getattr(response, "eval_count", None)
+    return None if generated is None else int(generated)
+
 def  handleResponse(
     client, 
     model: str,
@@ -21,17 +25,23 @@ def  handleResponse(
     visualfuncs: dict,
     think: bool = True,
     max_tokens: int = DEFAULT_MAX_TOKENS,
-) -> tuple[list[dict], int | None]:
+    summary: str = "",
+    summarizedCount: int = 0,
+) -> tuple[list[dict], int | None, int | None]:
 
     MAXLOOP = 10
     loop = 0
-    response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, max_tokens=max_tokens)
     history.append({"role": "user", "content": prompt})
+    written = []
+    def ask(callTools=tools, notice=None):
+        response = visualfuncs["think"](getResponse, client=client, model=model, history=history, tools=callTools, think=think, max_tokens=max_tokens, summary=summary, summarizedCount=summarizedCount, notice=notice)
+        written.append(countGenerated(response))
+        return response
+    response = ask()
 
     while response.message.tool_calls:
         if loop >= MAXLOOP:
-            prompt = "Max tools loop call reached please wrap that up no more tool call for this loop"
-            response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=[], think=think, max_tokens=max_tokens)
+            response = ask(callTools=[], notice="Max tools loop call reached please wrap that up no more tool call for this loop")
             break
         history.append(response.message)
         for call in response.message.tool_calls or []:
@@ -76,9 +86,10 @@ def  handleResponse(
                     "tool_name": call.function.name, 
                     "content": f"refused by the user",
                 })
-        response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, loop=True, max_tokens=max_tokens)
+        response = ask()
         loop += 1
 
     history.append({"role": "assistant", "content": response["message"]["content"]})
 
-    return history, countTokens(response)
+    known = [n for n in written if n is not None]
+    return history, countTokens(response), sum(known) if known else None

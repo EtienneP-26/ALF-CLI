@@ -1,4 +1,5 @@
 from OllamaTools.StreamHandle import collectStream
+from Context import buildContext
 from Variables import DEFAULT_MAX_TOKENS
 
 SystemPrompt: str = """
@@ -25,20 +26,20 @@ Consequences:
 def getResponse(
     client, 
     model: str,
-    prompt: str,
     history: list[dict],
     tools: list,
     think: bool = True,
-    loop: bool = False,
     on_text=None,
     max_tokens: int = DEFAULT_MAX_TOKENS,
+    summary: str = "",
+    summarizedCount: int = 0,
+    notice: str | None = None,
 ):
+    sent = [*history, {"role": "user", "content": notice}] if notice else history
     messages = [
         {"role": "system", "content": SystemPrompt},
-        *history,
+        *buildContext(sent, summary, summarizedCount, max_tokens),
     ]
-    if loop == False:
-        messages.append({"role": "user", "content": prompt})
 
     stream = client.chat(
         model=model,

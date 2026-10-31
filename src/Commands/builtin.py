@@ -32,6 +32,7 @@ def newCommand(state, args):
     state.conversation = newConversation()
     state.history = []
     state.contextUsed = None
+    state.totalTokens = 0
     clear_terminal()
     printLogo()
     return "New conversation started"
@@ -64,7 +65,7 @@ def resumeCommand(state, args):
     if conversation is None:
         return "Usage: `/resume <number>`, numbers are listed by `/conversations`"
     state.resume(conversation)
-    return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)\n{contextLine(None, state.maxTokens, state.history)}"
+    return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)\n{contextLine(None, state.maxTokens, state.contextMessages(), hidden=state.conversation['summarizedCount'])}"
 
 def _confirm(question: str) -> bool:
     try:
