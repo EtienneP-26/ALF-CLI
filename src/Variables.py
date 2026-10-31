@@ -1,5 +1,8 @@
 from AlfTools import *
 
+DEFAULT_MAX_TOKENS: int = 8192
+MIN_MAX_TOKENS: int = 512
+
 logoAlf: str = """
   /$$$$$$  /$$       /$$$$$$$$
  /$$__  $$| $$      | $$_____/

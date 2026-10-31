@@ -1,4 +1,5 @@
 from OllamaTools.ResponseHandle import getResponse
+from Variables import DEFAULT_MAX_TOKENS
 
 def countTokens(response) -> int:
     return int(getattr(response, "prompt_eval_count", None) or 0) + int(getattr(response, "eval_count", None) or 0)
@@ -15,18 +16,19 @@ def  handleResponse(
     validationfunc,
     visualfuncs: dict,
     think: bool = True,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
 ) -> tuple[list[dict], int]:
 
     MAXLOOP = 10
     loop = 0
     total_token_used: int = 0
-    response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think)
+    response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, max_tokens=max_tokens)
     history.append({"role": "user", "content": prompt})
 
     while response.message.tool_calls:
         if loop >= MAXLOOP:
             prompt = "Max tools loop call reached please wrap that up no more tool call for this loop"
-            response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=[], think=think)
+            response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=[], think=think, max_tokens=max_tokens)
             break
         history.append(response.message)
         for call in response.message.tool_calls or []:
@@ -72,7 +74,7 @@ def  handleResponse(
                     "content": f"refused by the user",
                 })
         total_token_used += countTokens(response)
-        response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, loop=True)
+        response = visualfuncs["think"](getResponse, client=client, model=model, prompt=prompt, history=history, tools=tools, think=think, loop=True, max_tokens=max_tokens)
         loop += 1
 
     history.append({"role": "assistant", "content": response["message"]["content"]})

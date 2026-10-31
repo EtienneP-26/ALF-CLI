@@ -18,7 +18,7 @@ clear_terminal()
 if __name__=="__main__":
     args = parseArgs()
     printLogo()
-    state = State(model="gemma4:e2b-mt", modelNames=list_models(client)[0])
+    state = State(model="gemma4:e2b-mt", modelNames=list_models(client)[0], maxTokens=args.max_tokens)
     reference = "1" if args.continue_ else args.resume
     if reference is not None:
         conversation = findConversation(reference)
@@ -53,6 +53,7 @@ if __name__=="__main__":
                 validationfunc=confirmVisual,
                 visualfuncs={"think": thinkVisual, "websearch": webSearchVisual},
                 think=False,
+                max_tokens=state.maxTokens,
         )
         state.history = response_history
         saveConversation(state.conversation, state.history)

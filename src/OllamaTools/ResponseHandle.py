@@ -1,4 +1,5 @@
 from OllamaTools.StreamHandle import collectStream
+from Variables import DEFAULT_MAX_TOKENS
 
 SystemPrompt: str = """
 You are ALF-CLI, an agentic CLI assistant working in the user's project.
@@ -30,6 +31,7 @@ def getResponse(
     think: bool = True,
     loop: bool = False,
     on_text=None,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
 ):
     messages = [
         {"role": "system", "content": SystemPrompt},
@@ -44,5 +46,6 @@ def getResponse(
         think=think,
         tools=tools,
         stream=True,
+        options={"num_ctx": max_tokens},
     )
     return collectStream(stream, on_text)
