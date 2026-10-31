@@ -88,3 +88,17 @@ def deleteCommand(state, args):
     if conversation["id"] == state.conversation["id"]:
         newCommand(state, [])
     return f"Conversation deleted: `{conversation['title']}`"
+
+@command("/mode", "Choose or set the mode: `/mode [ask|auto]`")
+def modeCommand(state, args):
+    """Open a choice menu without argument, else set the mode to ask or auto."""
+    if not args:
+        try:
+            state.mode = choiceVisual(f"\nChoose a mode (current: {state.mode}): ", ["ask", "auto"], state.mode)
+        except (EOFError, KeyboardInterrupt):
+            print()
+        return f"Mode: `{state.mode}`"
+    if args[0] not in ("ask", "auto"):
+        return "Usage: `/mode [ask|auto]`"
+    state.mode = args[0]
+    return f"Mode: `{state.mode}`"

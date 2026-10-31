@@ -15,6 +15,7 @@ class State:
     maxTokensFixed: bool = False
     contextUsed: int | None = None
     totalTokens: int = 0
+    mode: str = "ask"
 
     def resume(self, conversation: dict):
         self.conversation = conversation

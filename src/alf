@@ -30,7 +30,7 @@ if __name__=="__main__":
         sys.exit(f"Cannot reach Ollama: {e}")
     model = "gemma4:e2b-mt"
     fixed = args.max_tokens is not None
-    state = State(model=model, modelNames=modelNames, maxTokens=args.max_tokens if fixed else resolveMaxTokens(client, model), maxTokensFixed=fixed)
+    state = State(model=model, modelNames=modelNames, maxTokens=args.max_tokens if fixed else resolveMaxTokens(client, model), maxTokensFixed=fixed, mode="auto" if args.auto else "ask")
     reference = "1" if args.continue_ else args.resume
     if reference is not None:
         conversation = findConversation(reference)
@@ -75,6 +75,7 @@ if __name__=="__main__":
                 max_tokens=state.maxTokens,
                 summary=state.conversation["summary"],
                 summarizedCount=state.conversation["summarizedCount"],
+                auto=state.mode == "auto",
             )
         except (ollama.ResponseError, ConnectionError, httpx.HTTPError) as e:
             del state.history[historySize:]

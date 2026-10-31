@@ -27,6 +27,7 @@ def  handleResponse(
     max_tokens: int = DEFAULT_MAX_TOKENS,
     summary: str = "",
     summarizedCount: int = 0,
+    auto: bool = False,
 ) -> tuple[list[dict], int | None, int | None]:
 
     MAXLOOP = 10
@@ -59,9 +60,11 @@ def  handleResponse(
                 printfunc(f"`write_file` → `{args.get('file_path')}`\n```diff\n{diff}\n```")
             elif call.function.name == "web_search":
                 pass
+            elif call.function.name == "plan_task":
+                printfunc("Plan:\n" + "\n".join(f"{i}. {s}" for i, s in enumerate(args.get("steps", []), 1)))
             else:
                 printfunc(f"{call.function.name}({args})")
-            if call.function.name in ("read_file", "web_search") or validationfunc(f"Accept:"):
+            if call.function.name in ("read_file", "web_search") or auto or validationfunc(f"Accept:"):
                 try:
                     if call.function.name == "web_search":
                         result = visualfuncs["websearch"](toolfunc, **call.function.arguments)
