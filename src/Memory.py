@@ -136,7 +136,7 @@ def newConversation() -> dict:
         A dict with `id`, `title` (empty), `created_at`, `updated_at`, `messages`, `summary` (empty) and `summarizedCount` (0).
     """
     now = _now()
-    return {"id": uuid.uuid4().hex, "title": "", "created_at": now, "updated_at": now, "messages": [], "summary": "", "summarizedCount": 0}
+    return {"id": uuid.uuid4().hex, "title": "", "created_at": now, "updated_at": now, "messages": [], "summary": "", "summarizedCount": 0, "totalTokens": 0}
 
 
 def saveConversation(conversation: dict, messages: list):

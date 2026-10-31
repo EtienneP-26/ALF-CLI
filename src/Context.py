@@ -89,7 +89,9 @@ def contextLine(used: int | None, budget: int, messages: list, turn: int | None 
     else:
         line = formatContext(used, budget)
         if turn is not None:
-            line += f" | Message: {formatKTokens(turn)} | Total: {formatKTokens(total)}"
+            line += f" | Message: {formatKTokens(turn)}"
+    if total > 0:
+        line += f" | Total: {formatKTokens(total)}"
     if hidden:
         line += f" | {hidden} older messages summarized"
     return line

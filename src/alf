@@ -38,7 +38,7 @@ if __name__=="__main__":
             sys.exit(f"No conversation found for `{reference}`. Type `/conversations` in ALF-CLI to list them.")
         state.resume(conversation)
         outputPrint(f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)")
-        print('\033[90m' + contextLine(None, state.maxTokens, state.contextMessages(), hidden=state.conversation['summarizedCount']) + '\033[0m')
+        print('\033[90m' + contextLine(None, state.maxTokens, state.contextMessages(), total=state.totalTokens, hidden=state.conversation['summarizedCount']) + '\033[0m')
     while state.running:
         prompt = inputPrompt()
         message = handleCommand(prompt, state)
@@ -87,6 +87,7 @@ if __name__=="__main__":
         state.contextUsed = token_used
         state.totalTokens += generated or 0
         state.history = response_history
+        state.conversation["totalTokens"] = state.totalTokens
         saveConversation(state.conversation, state.history)
         context = state.contextMessages()
         print()

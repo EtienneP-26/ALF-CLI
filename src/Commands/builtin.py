@@ -65,7 +65,7 @@ def resumeCommand(state, args):
     if conversation is None:
         return "Usage: `/resume <number>`, numbers are listed by `/conversations`"
     state.resume(conversation)
-    return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)\n{contextLine(None, state.maxTokens, state.contextMessages(), hidden=state.conversation['summarizedCount'])}"
+    return f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)\n{contextLine(None, state.maxTokens, state.contextMessages(), total=state.totalTokens, hidden=state.conversation['summarizedCount'])}"
 
 def _confirm(question: str) -> bool:
     try:

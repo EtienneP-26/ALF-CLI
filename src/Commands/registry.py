@@ -24,6 +24,8 @@ class State:
         conversation["summary"] = summary if isinstance(summary, str) else ""
         valid = isinstance(count, int) and not isinstance(count, bool)
         conversation["summarizedCount"] = min(max(count, 0), len(self.history)) if valid else 0
+        total = conversation.get("totalTokens")
+        conversation["totalTokens"] = self.totalTokens = total if isinstance(total, int) and not isinstance(total, bool) and total > 0 else 0
 
     def contextMessages(self) -> list:
         return buildContext(self.history, self.conversation.get("summary", ""), self.conversation.get("summarizedCount", 0), self.maxTokens)
