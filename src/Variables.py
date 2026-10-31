@@ -1,7 +1,8 @@
 from AlfTools import *
 
 DEFAULT_MAX_TOKENS: int = 8192
-MIN_MAX_TOKENS: int = 512
+MIN_MAX_TOKENS: int = 4096
+ALERT_RATIO: float = 0.8
 
 logoAlf: str = """
   /$$$$$$  /$$       /$$$$$$$$
