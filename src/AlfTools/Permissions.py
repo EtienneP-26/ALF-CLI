@@ -1,7 +1,14 @@
+import fnmatch
 import os
 import shlex
 
 ALLOWED_DIRS: list[str] = [os.getcwd()]
+
+SECRET_PATTERNS = [".env", ".env.*", "*.pem", "*.key", "id_rsa*", "id_ed25519*", "credentials*", "secrets*", "*.secret"]
+
+def isSecret(file_path: str) -> bool:
+    name = os.path.basename(os.path.realpath(file_path)).lower()
+    return name != ".env.example" and any(fnmatch.fnmatch(name, p) for p in SECRET_PATTERNS)
 
 def check_path(file_path: str) -> str:
     try:
@@ -27,14 +34,20 @@ def check_command(command: str) -> None:
         if "://" in token or token == "/dev/null":
             continue
         token = os.path.expanduser(os.path.expandvars(token))
+        if isSecret(token):
+            raise PermissionError(f"Access denied: {token[:200]!a} is a secret file")
         if "/" in token or token.startswith("~") or token == "..":
             check_path(token)
 
 def checkAccess(name: str, args: dict) -> None:
-    key = {"read_file": "file_path", "write_file": "file_path", "edit_file": "file_path", "run_command": "command"}.get(name)
+    key = {"read_file": "file_path", "write_file": "file_path", "edit_file": "file_path", "list_dir": "path", "run_command": "command"}.get(name)
     if key is None:
         return
-    value = args.get(key)
+    value = args.get(key, "." if name == "list_dir" else None)
     if not isinstance(value, str):
         raise PermissionError(f"Access denied: `{key}` must be a string")
-    (check_command if key == "command" else check_path)(value)
+    if key == "command":
+        return check_command(value)
+    real = check_path(value)
+    if name in ("read_file", "edit_file") and isSecret(real):
+        raise PermissionError(f"Access denied: {value[:200]!a} is a secret file")

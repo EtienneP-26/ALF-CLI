@@ -1,5 +1,5 @@
 
-__all__ = ["read_file", "write_file", "edit_file"]
+__all__ = ["read_file", "write_file", "edit_file", "list_dir"]
 
 import os
 
@@ -46,3 +46,15 @@ def edit_file(file_path: str, old_text: str, new_text: str) -> str:
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
     return f"edited: {file_path}"
+
+def list_dir(path: str = ".") -> str:
+    """List the entries of a directory (one level, .git hidden), folders end with /
+
+    :param path: path to the directory, the current directory by default
+    :returns: one entry per line sorted by name, at most 200 entries
+    """
+    names = sorted(n for n in os.listdir(path) if n != ".git")
+    lines = [n + "/" if os.path.isdir(os.path.join(path, n)) else n for n in names[:200]]
+    if len(names) > 200:
+        lines.append(f"[truncated: {len(names) - 200} more entries]")
+    return "\n".join(lines)

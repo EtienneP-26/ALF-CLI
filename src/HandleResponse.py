@@ -78,7 +78,7 @@ def  handleResponse(
                 printfunc("Plan:\n" + "\n".join(f"{i}. {s}" for i, s in enumerate(args.get("steps", []), 1)))
             else:
                 printfunc(f"{call.function.name}({args})")
-            if call.function.name in ("read_file", "web_search") or auto or validationfunc(f"Accept:"):
+            if call.function.name in ("read_file", "list_dir", "web_search") or auto or validationfunc(f"Accept:"):
                 try:
                     if call.function.name == "web_search":
                         result = visualfuncs["websearch"](toolfunc, **call.function.arguments)
