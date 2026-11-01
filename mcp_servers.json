@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "devtools": {"command": "python3", "args": ["src/McpServers/DevTools.py"]},
+    "time": {"command": "uvx", "args": ["mcp-server-time"]}
+  }
+}

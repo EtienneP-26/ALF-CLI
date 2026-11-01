@@ -21,4 +21,5 @@ def parseArgs(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--auto", action="store_true", help="run commands and write files without asking")
     parser.add_argument("--allowed-dir", dest="allowed_dir", action="append", metavar="DIR", help="directory where read_file, write_file and run_command may go (repeatable, default: current directory)")
     parser.add_argument("--no-sandbox", dest="no_sandbox", action="store_true", help="run commands directly on this machine instead of in the docker sandbox (can cause security problems)")
+    parser.add_argument("--mcp-config", dest="mcp_config", metavar="FILE", help="MCP servers config (Claude Desktop format), replaces $ALF_HOME/mcp_servers.json")
     return parser.parse_args(argv)

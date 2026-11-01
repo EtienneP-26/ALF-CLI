@@ -3,3 +3,4 @@ rich
 prompt_toolkit
 ddgs
 pytest
+mcp>=2.3,<3

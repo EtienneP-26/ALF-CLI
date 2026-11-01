@@ -9,6 +9,7 @@ from CliTools.Args import parseArgs
 from Memory import findConversation, saveConversation, savePendingPrompt
 import Commands.builtin
 import os
+from pathlib import Path
 import sys
 import ollama
 import httpx
@@ -46,6 +47,9 @@ if __name__=="__main__":
     state = State(model=model, modelNames=modelNames, maxTokens=args.max_tokens if fixed else resolveMaxTokens(client, model), maxTokensFixed=fixed, mode="auto" if args.auto else "ask")
     if args.think:
         outputPrint(handleCommand("/think on", state))
+    if args.mcp_config is not None or (Path(os.environ.get("ALF_HOME", Path.home() / ".alf")) / "mcp_servers.json").exists():
+        from AlfTools.McpClient import connectServers
+        connectServers(args.mcp_config, tools, available, outputPrint)
     reference = "1" if args.continue_ else args.resume
     if reference is not None:
         conversation = findConversation(reference)
