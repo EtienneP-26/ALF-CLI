@@ -39,7 +39,9 @@ if __name__=="__main__":
         modelNames = list_models(client)[0]
     except (ConnectionError, httpx.HTTPError) as e:
         sys.exit(f"Cannot reach Ollama: {e}")
-    model = "gemma4:e2b-mt"
+    model = args.model
+    if model not in modelNames:
+        sys.exit(f"Model not found: `{model}`. Available models: {', '.join(modelNames)}")
     fixed = args.max_tokens is not None
     state = State(model=model, modelNames=modelNames, maxTokens=args.max_tokens if fixed else resolveMaxTokens(client, model), maxTokensFixed=fixed, mode="auto" if args.auto else "ask")
     if args.think:
