@@ -1,4 +1,7 @@
+import re
+
 from OllamaTools.ResponseHandle import getResponse
+from OllamaTools.StreamHandle import EmptyResponseError
 from Variables import DEFAULT_MAX_TOKENS
 from AlfTools.Permissions import checkAccess
 from AlfTools.FileManipulation import applyEdit
@@ -112,6 +115,11 @@ def  handleResponse(
         response = ask()
         loop += 1
 
+    marker = r"(\s*<\|[^>]*>\s*)+"
+    if re.fullmatch(marker, response["message"]["content"] or ""):
+        response = ask(callTools=[])
+        if re.fullmatch(marker, response["message"]["content"] or ""):
+            raise EmptyResponseError("The model answered with only a raw marker.")
     history.append({"role": "assistant", "content": response["message"]["content"]})
 
     known = [n for n in written if n is not None]
