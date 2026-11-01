@@ -2,9 +2,28 @@ import os
 from subprocess import run, TimeoutExpired
 from uuid import uuid4
 
-from AlfTools.Permissions import ALLOWED_DIRS, check_path
+from AlfTools.Permissions import ALLOWED_DIRS, check_path, isSecret
 
 SANDBOX = True
+
+def protected_mounts(root: str) -> list:
+    # every .git (dir or file) read-only, every secret file hidden by /dev/null
+    out = []
+    for cur, subdirs, files in os.walk(root):
+        if ".git" in subdirs:
+            subdirs.remove(".git")
+            p = os.path.join(cur, ".git")
+            if not os.path.islink(p):
+                out += ["-v", f"{p}:{p}:ro"]
+        for f in files:
+            p = os.path.join(cur, f)
+            if os.path.islink(p):
+                continue
+            if f == ".git":
+                out += ["-v", f"{p}:{p}:ro"]
+            elif isSecret(p):
+                out += ["-v", f"/dev/null:{p}:ro"]
+    return out
 
 def run_command(command: str) -> str:
     """Execute a command in an isolated container and return the result
@@ -41,8 +60,7 @@ def run_command(command: str) -> str:
     for d in dirs:
         argv += ["-v", f"{d}:{d}"]
     for d in dirs:
-        if os.path.isdir(os.path.join(d, ".git")):
-            argv += ["-v", f"{d}/.git:{d}/.git:ro"]
+        argv += protected_mounts(d)
     argv += ["-w", workdir, "alf-sandbox", "timeout", "-s", "KILL", "13", "sh", "-c", command]
     try:
         r = run(argv, capture_output=True, text=True, timeout=12)
