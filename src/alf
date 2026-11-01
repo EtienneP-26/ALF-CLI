@@ -14,6 +14,7 @@ import ollama
 import httpx
 from Variables import tools, available
 from AlfTools.Permissions import ALLOWED_DIRS
+from AlfTools import RunCommand
 from OllamaTools.StreamHandle import EmptyResponseError
 from OllamaTools.ModelContext import resolveMaxTokens
 from Context import contextLine, formatKTokens, isNearBudget, estimateTokens
@@ -29,7 +30,11 @@ if __name__=="__main__":
         if missing:
             sys.exit(f"Allowed directory not found: `{missing[0]}`")
         ALLOWED_DIRS[:] = [os.path.realpath(d) for d in args.allowed_dir]
+    if args.no_sandbox:
+        RunCommand.SANDBOX = False
     printLogo()
+    if args.no_sandbox:
+        outputPrint("Warning: --no-sandbox: commands run directly on this machine, this can cause security problems.")
     try:
         modelNames = list_models(client)[0]
     except (ConnectionError, httpx.HTTPError) as e:
