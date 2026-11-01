@@ -3,14 +3,26 @@ __all__ = ["read_file", "write_file", "edit_file", "list_dir"]
 
 import os
 
+MAX_READ_SIZE = 1_000_000
+
 def read_file(file_path: str) -> str:
-    """Read a given file with it's file path
+    """Read a given text file with it's file path.
+    Files over 1 MB and binary files are refused.
 
     :param file_path: path to where the file is
     :returns: the file path: an line breaker and the file content
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
-         content = f.read()
+    size = os.path.getsize(file_path)
+    if size > MAX_READ_SIZE:
+        raise ValueError(f"{file_path} is too large to read: {size} bytes (limit {MAX_READ_SIZE})")
+    with open(file_path, 'rb') as f:
+        data = f.read()
+    try:
+        if b"\0" in data:
+            raise UnicodeDecodeError("utf-8", b"", 0, 1, "NUL byte")
+        content = data.decode('utf-8')
+    except UnicodeDecodeError:
+        raise ValueError(f"{file_path} is a binary file, it cannot be read as text") from None
     return f"{file_path}:\n{content}"
 
 def write_file(file_path: str, content: str) -> str:
