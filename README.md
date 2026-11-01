@@ -13,7 +13,7 @@
 - [Équipe](#équipe)
 
 ## Description
-- **Année EPITECH** : ...
+- **Année EPITECH** : 3ème année
 - **Objectif** : ...
 - **Contraintes** : Language_imposé, librairies_authorisé_interdites, etc
 
@@ -30,7 +30,7 @@ cd ALF-CLI
 python3 src/alf [--model NAME] [--allowed-dir DIR]... [--max-tokens N]
 ```
 - `--model NAME` : modèle Ollama (défaut `gemma4:e2b-mt`).
-- `--allowed-dir DIR` : dossier où `read_file`, `write_file`, `edit_file` et `run_command` ont le droit d'aller (répétable, défaut : dossier courant). Hors de ces dossiers, l'accès est refusé. Pour `run_command`, c'est un filtre sur le texte de la commande, pas une isolation : il est contournable (ex. `python3 -c 'print(open("/etc/passwd").read())'`). Un chemin absolu comme `/usr/bin/x` est refusé, `/dev/null` est permis.
+- `--allowed-dir DIR` : dossier où `read_file`, `list_dir`, `write_file`, `edit_file` et `run_command` ont le droit d'aller (répétable, défaut : dossier courant). Hors de ces dossiers, l'accès est refusé. Pour `run_command`, c'est un filtre sur le texte de la commande, pas une isolation : il est contournable (ex. `python3 -c 'print(open("/etc/passwd").read())'`). Un chemin absolu comme `/usr/bin/x` est refusé, `/dev/null` est permis. Les fichiers secrets (`.env`, `*.pem`, `*.key`, `id_rsa*`, `credentials*`…, sauf `.env.example`) sont bloqués en lecture (`read_file`, `edit_file`, noms dans `run_command`) ; la liste est courte et le filtre contournable (`cat .e*` ou `python3 -c ...` passent). `list_dir` liste un dossier sans lire les fichiers.
 - `--max-tokens N` : budget de tokens du contexte envoyé au modèle (`num_ctx` d'Ollama), défaut : le contexte max du modèle Ollama (8192 si inconnu), minimum 4096. C'est le plafond du contexte : une ligne `Context: 0.8k/131.1k (0%)` (en kTokens) s'affiche après chaque tour, avec une alerte à partir de 80 %.
 - `--auto` : `run_command`, `write_file` et `edit_file` s'exécutent sans confirmation (mode `ask` par défaut). `/mode [ask|auto]` ouvre un choix entre `ask` et `auto`, ou change directement le mode.
 - `plan_task` : outil du modèle qui présente un plan numéroté avant une tâche à plusieurs étapes ; il passe par la même approbation (refus possible en `ask`).
