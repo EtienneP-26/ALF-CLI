@@ -51,3 +51,5 @@ def checkAccess(name: str, args: dict) -> None:
     real = check_path(value)
     if name in ("read_file", "edit_file") and isSecret(real):
         raise PermissionError(f"Access denied: {value[:200]!a} is a secret file")
+    if name in ("write_file", "edit_file") and ".git" in real.split(os.sep):
+        raise PermissionError(f"Access denied: {value[:200]!a} is inside .git")
