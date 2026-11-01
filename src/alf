@@ -13,6 +13,7 @@ import sys
 import ollama
 import httpx
 from Variables import tools, available
+from AlfTools.Permissions import ALLOWED_DIRS
 from OllamaTools.StreamHandle import EmptyResponseError
 from OllamaTools.ModelContext import resolveMaxTokens
 from Context import contextLine, formatKTokens, isNearBudget, estimateTokens
@@ -23,6 +24,11 @@ clear_terminal()
 
 if __name__=="__main__":
     args = parseArgs()
+    if args.allowed_dir:
+        missing = [d for d in args.allowed_dir if not os.path.isdir(d)]
+        if missing:
+            sys.exit(f"Allowed directory not found: `{missing[0]}`")
+        ALLOWED_DIRS[:] = [os.path.realpath(d) for d in args.allowed_dir]
     printLogo()
     try:
         modelNames = list_models(client)[0]

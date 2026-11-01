@@ -1,5 +1,6 @@
 from OllamaTools.ResponseHandle import getResponse
 from Variables import DEFAULT_MAX_TOKENS
+from AlfTools.Permissions import checkAccess
 
 def countTokens(response) -> int | None:
     prompt = getattr(response, "prompt_eval_count", None)
@@ -55,6 +56,12 @@ def  handleResponse(
                 })
                 continue
             args = call.function.arguments
+            try:
+                checkAccess(call.function.name, args)
+            except PermissionError as e:
+                printfunc(f"`{call.function.name}` refused: {e}")
+                history.append({"role": "tool", "tool_name": call.function.name, "content": f"{e}"})
+                continue
             if call.function.name == "write_file":
                 diff = difffunc(args.get("file_path", ""), args.get("content", ""))
                 printfunc(f"`write_file` → `{args.get('file_path')}`\n```diff\n{diff}\n```")

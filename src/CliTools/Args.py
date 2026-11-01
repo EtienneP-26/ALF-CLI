@@ -17,4 +17,5 @@ def parseArgs(argv: list[str] | None = None) -> argparse.Namespace:
     group.add_argument("--resume", metavar="ID_OR_NUMBER", help="reopen a conversation by id or by its number in `/conversations`")
     parser.add_argument("--max-tokens", dest="max_tokens", type=maxTokensType, default=None, metavar="N", help=f"context token budget sent to the model (num_ctx, default: the context length of the model, else {DEFAULT_MAX_TOKENS}, min {MIN_MAX_TOKENS})")
     parser.add_argument("--auto", action="store_true", help="run commands and write files without asking")
+    parser.add_argument("--allowed-dir", dest="allowed_dir", action="append", metavar="DIR", help="directory where read_file, write_file and run_command may go (repeatable, default: current directory)")
     return parser.parse_args(argv)
