@@ -8,6 +8,7 @@ class EmptyResponseError(Exception):
 def collectStream(
     stream: Iterable[ChatResponse],
     on_text: Callable[[str], None] | None = None,
+    on_thinking: Callable[[str], None] | None = None,
 ) -> ChatResponse:
     """
     # collectStream
@@ -17,6 +18,7 @@ def collectStream(
     ## Args
     - `stream`: the chunks returned by `client.chat(..., stream=True)`.
     - `on_text`: called with the full text received so far each time a chunk brings new text.
+    - `on_thinking`: same as `on_text`, for the reasoning text.
 
     ## Returns
     The last chunk (it holds the token counts), with the whole `content`, `thinking` and `tool_calls` put back in its message.
@@ -31,7 +33,10 @@ def collectStream(
     last = None
     for chunk in stream:
         last = chunk
-        thinking += chunk.message.thinking or ""
+        if chunk.message.thinking:
+            thinking += chunk.message.thinking
+            if on_thinking:
+                on_thinking(thinking)
         tool_calls.extend(chunk.message.tool_calls or [])
         if chunk.message.content:
             content += chunk.message.content

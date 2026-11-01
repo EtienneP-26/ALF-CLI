@@ -16,3 +16,10 @@ def modelContextLength(client, model: str) -> int | None:
 
 def resolveMaxTokens(client, model: str) -> int:
     return modelContextLength(client, model) or DEFAULT_MAX_TOKENS
+
+
+def supportsThinking(client, model: str) -> bool:
+    try:
+        return "thinking" in (client.show(model).capabilities or [])
+    except (ollama.ResponseError, ConnectionError, httpx.HTTPError):
+        return False

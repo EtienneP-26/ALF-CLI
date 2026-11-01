@@ -32,6 +32,7 @@ def getResponse(
     tools: list,
     think: bool = True,
     on_text=None,
+    on_thinking=None,
     max_tokens: int = DEFAULT_MAX_TOKENS,
     summary: str = "",
     summarizedCount: int = 0,
@@ -51,4 +52,4 @@ def getResponse(
         stream=True,
         options={"num_ctx": max_tokens},
     )
-    return collectStream(stream, on_text)
+    return collectStream(stream, on_text, on_thinking)

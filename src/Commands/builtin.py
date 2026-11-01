@@ -1,8 +1,8 @@
-from CliTools.Cli import choiceVisual, printLogo, clear_terminal
+from CliTools.Cli import thoughts, printable, choiceVisual, printLogo, clear_terminal
 from Commands import command, commandHelp
 from Context import contextLine
 from OllamaTools.ConnectionOllama import client
-from OllamaTools.ModelContext import resolveMaxTokens
+from OllamaTools.ModelContext import resolveMaxTokens, supportsThinking
 from Memory import deleteConversation, findConversation, listConversations, newConversation, renameConversation
 
 @command("/exit", "Quit ALF-CLI")
@@ -25,7 +25,11 @@ def modelCommand(state, args):
     if not state.maxTokensFixed:
         state.maxTokens = resolveMaxTokens(client, state.model)
     state.contextUsed = None
-    return f"Model changed for: `{state.model}`"
+    message = f"Model changed for: `{state.model}`"
+    if state.think and not supportsThinking(client, state.model):
+        state.think = False
+        message += "\nThinking turned off: this model does not support it."
+    return message
 
 @command("/new", "Start a new conversation")
 def newCommand(state, args):
@@ -102,3 +106,24 @@ def modeCommand(state, args):
         return "Usage: `/mode [ask|auto]`"
     state.mode = args[0]
     return f"Mode: `{state.mode}`"
+
+@command("/think", "Show the reasoning of the model: `/think [on|off]`, `/think show` for the last one")
+def thinkCommand(state, args):
+    if args == ["show"]:
+        if not thoughts:
+            return "No reasoning for the last question. Turn it on with `/think on`."
+        return printable("\n\n".join(thoughts))
+    if not args:
+        try:
+            choiceValue = choiceVisual(f"\nThinking (current: {'on' if state.think else 'off'}): ", ["on", "off"], "on" if state.think else "off")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return f"Thinking: `{'on' if state.think else 'off'}`"
+        args = [choiceValue]
+    if args[0] not in ("on", "off"):
+        return "Usage: `/think [on|off|show]`"
+    if args[0] == "on" and not supportsThinking(client, state.model):
+        state.think = False
+        return f"Model `{state.model}` does not support thinking. Try another with `/model`."
+    state.think = args[0] == "on"
+    return f"Thinking: `{args[0]}`"

@@ -16,6 +16,7 @@ class State:
     contextUsed: int | None = None
     totalTokens: int = 0
     mode: str = "ask"
+    think: bool = False
 
     def resume(self, conversation: dict):
         self.conversation = conversation

@@ -3,7 +3,7 @@
 from OllamaTools.ConnectionOllama import client
 from OllamaTools.ListAvailableModel import list_models
 from HandleResponse import handleResponse
-from CliTools.Cli import inputPrompt, thinkVisual, webSearchVisual, compressVisual, outputPrint, printLogo, confirmVisual, write_diff, clear_terminal
+from CliTools.Cli import inputPrompt, thinkVisual, observationVisual, thoughts, webSearchVisual, compressVisual, outputPrint, printLogo, confirmVisual, write_diff, clear_terminal
 from Commands import State, handleCommand
 from CliTools.Args import parseArgs
 from Memory import findConversation, saveConversation, savePendingPrompt
@@ -42,6 +42,8 @@ if __name__=="__main__":
     model = "gemma4:e2b-mt"
     fixed = args.max_tokens is not None
     state = State(model=model, modelNames=modelNames, maxTokens=args.max_tokens if fixed else resolveMaxTokens(client, model), maxTokensFixed=fixed, mode="auto" if args.auto else "ask")
+    if args.think:
+        outputPrint(handleCommand("/think on", state))
     reference = "1" if args.continue_ else args.resume
     if reference is not None:
         conversation = findConversation(reference)
@@ -70,6 +72,7 @@ if __name__=="__main__":
         compactIfNeeded(client, state.model, state.conversation, state.history, prompt, state.maxTokens, outputPrint, compressVisual)
         savePendingPrompt(state.conversation, state.history, prompt)
         historySize = len(state.history)
+        thoughts.clear()
         try:
             response_history, token_used, generated = handleResponse(
                 client=client,
@@ -81,8 +84,8 @@ if __name__=="__main__":
                 printfunc=outputPrint,
                 difffunc=write_diff,
                 validationfunc=confirmVisual,
-                visualfuncs={"think": thinkVisual, "websearch": webSearchVisual},
-                think=False,
+                visualfuncs={"think": thinkVisual, "websearch": webSearchVisual, "observation": observationVisual},
+                think=state.think,
                 max_tokens=state.maxTokens,
                 summary=state.conversation["summary"],
                 summarizedCount=state.conversation["summarizedCount"],

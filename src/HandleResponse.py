@@ -46,7 +46,9 @@ def  handleResponse(
         if loop >= MAXLOOP:
             response = ask(callTools=[], notice="Max tools loop call reached please wrap that up no more tool call for this loop")
             break
+        response.message.thinking = None
         history.append(response.message)
+        added = len(history)
         for call in response.message.tool_calls or []:
             toolfunc = available.get(call.function.name)
             if toolfunc is None:
@@ -73,11 +75,12 @@ def  handleResponse(
                 diff = difffunc(args.get("file_path", ""), new)
                 printfunc(f"`{call.function.name}` → `{args.get('file_path')}`\n```diff\n{diff}\n```")
             elif call.function.name == "web_search":
-                pass
+                if think:
+                    printfunc(f"Action: web_search({args})")
             elif call.function.name == "plan_task":
                 printfunc("Plan:\n" + "\n".join(f"{i}. {s}" for i, s in enumerate(args.get("steps", []), 1)))
             else:
-                printfunc(f"{call.function.name}({args})")
+                printfunc(f"{'Action: ' if think else ''}{call.function.name}({args})")
             if call.function.name in ("read_file", "list_dir", "web_search") or auto or validationfunc(f"Accept:"):
                 try:
                     if call.function.name == "web_search":
@@ -103,6 +106,9 @@ def  handleResponse(
                     "tool_name": call.function.name, 
                     "content": f"refused by the user",
                 })
+        if think:
+            for message in history[added:]:
+                visualfuncs["observation"](message["tool_name"], message["content"])
         response = ask()
         loop += 1
 
