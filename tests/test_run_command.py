@@ -166,6 +166,64 @@ def test_real_git_read_only(allowed):
     assert not (allowed / ".git" / "x").exists()
 
 
+def tree(root):
+    """A tree with secrets, nested .git dir and .git file, a symlink."""
+    (root / "sub" / ".git" / "hooks").mkdir(parents=True)
+    (root / "wt").mkdir()
+    (root / "wt" / ".git").write_text("gitdir: x")
+    (root / ".env").write_text("SECRET=topsecret")
+    (root / "sub" / ".env").write_text("SECRET=topsecret")
+    (root / ".env.example").write_text("A=1")
+    (root / "key.pem").write_text("SECRET=topsecret")
+    (root / "normal.txt").write_text("hello")
+    (root / "link").symlink_to(root / ".env")
+    (root / "gitlink").symlink_to(root / "sub")
+    (root / "sub" / "sublink").symlink_to(root / "normal.txt")
+
+
+def test_mounts_secrets_and_git(allowed, calls):
+    """Secrets are overlaid by /dev/null, every .git is ro, after the parent mount."""
+    tree(allowed)
+    run_command("ls")
+    argv = calls[1][0]
+    d = str(allowed.resolve())
+    mounts = [argv[i + 1] for i, a in enumerate(argv) if a == "-v"]
+    assert mounts[0] == f"{d}:{d}"
+    for f in [".env", "sub/.env", "key.pem"]:
+        assert f"/dev/null:{d}/{f}:ro" in mounts
+    for f in [".env.example", "normal.txt", "link", "sub/sublink", "gitlink"]:
+        assert not any(m.endswith(f"{d}/{f}:ro") or m.endswith(f":{d}/{f}") for m in mounts[1:])
+    for g in [".git", "sub/.git", "wt/.git"]:
+        assert f"{d}/{g}:{d}/{g}:ro" in mounts
+    assert not any("sub/.git/" in m for m in mounts)
+    assert len(mounts) == 1 + 3 + 3
+
+
+def test_mounts_ignore_symlinked_git(allowed, calls):
+    """A .git symlink is not mounted."""
+    (allowed / "real").mkdir()
+    (allowed / "x").mkdir()
+    (allowed / "x" / ".git").symlink_to(allowed / "real")
+    run_command("ls")
+    assert not any("x/.git" in a for a in calls[1][0])
+
+
+@real_docker
+def test_real_secrets_hidden_and_git_protected(allowed):
+    """Bulk readers never see secrets; nested .git is not writable; host is untouched."""
+    tree(allowed)
+    for cmd in ["grep -r . .", "tar cf - . | tar xOf - ", "find . -type f -exec cat {} +"]:
+        out = run_command(cmd)
+        assert "topsecret" not in out
+        assert "hello" in out
+    assert "exit code 0" not in run_command("echo x > sub/.git/hooks/pre-commit")
+    assert "exit code 0" not in run_command("echo x > wt/.git")
+    assert not (allowed / "sub/.git/hooks/pre-commit").exists()
+    assert (allowed / "wt/.git").read_text() == "gitdir: x"
+    for f in [".env", "sub/.env", "key.pem"]:
+        assert (allowed / f).read_text() == "SECRET=topsecret"
+
+
 @real_docker
 def test_real_memory_hog_killed(allowed):
     """A process exceeding 512m is killed."""
