@@ -1,6 +1,7 @@
 from OllamaTools.ResponseHandle import getResponse
 from Variables import DEFAULT_MAX_TOKENS
 from AlfTools.Permissions import checkAccess
+from AlfTools.FileManipulation import applyEdit
 
 def countTokens(response) -> int | None:
     prompt = getattr(response, "prompt_eval_count", None)
@@ -62,9 +63,15 @@ def  handleResponse(
                 printfunc(f"`{call.function.name}` refused: {e}")
                 history.append({"role": "tool", "tool_name": call.function.name, "content": f"{e}"})
                 continue
-            if call.function.name == "write_file":
-                diff = difffunc(args.get("file_path", ""), args.get("content", ""))
-                printfunc(f"`write_file` → `{args.get('file_path')}`\n```diff\n{diff}\n```")
+            if call.function.name in ("write_file", "edit_file"):
+                try:
+                    new = applyEdit(args.get("file_path", ""), args.get("old_text", ""), args.get("new_text", "")) if call.function.name == "edit_file" else args.get("content", "")
+                except (ValueError, OSError, TypeError) as e:
+                    printfunc(f"`{call.function.name}` failed: {e}")
+                    history.append({"role": "tool", "tool_name": call.function.name, "content": f"{e}"})
+                    continue
+                diff = difffunc(args.get("file_path", ""), new)
+                printfunc(f"`{call.function.name}` → `{args.get('file_path')}`\n```diff\n{diff}\n```")
             elif call.function.name == "web_search":
                 pass
             elif call.function.name == "plan_task":

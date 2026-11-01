@@ -31,7 +31,7 @@ def check_command(command: str) -> None:
             check_path(token)
 
 def checkAccess(name: str, args: dict) -> None:
-    key = {"read_file": "file_path", "write_file": "file_path", "run_command": "command"}.get(name)
+    key = {"read_file": "file_path", "write_file": "file_path", "edit_file": "file_path", "run_command": "command"}.get(name)
     if key is None:
         return
     value = args.get(key)
