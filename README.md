@@ -29,9 +29,10 @@ Docker est requis pour `run_command`. L'image `alf-sandbox` contient Python, C/C
  
 ## Utilisation
 ```bash
-python3 src/alf [--model NAME] [--allowed-dir DIR]... [--max-tokens N] [--no-sandbox]
+python3 src/alf [--allowed-dir DIR]... [--max-tokens N] [--auto] [--no-sandbox] [--think]
 ```
-- `--model NAME` : modèle Ollama (défaut `gemma4:e2b-mt`).
+- `/model [nom]` : change le modèle Ollama pendant la session (défaut `gemma4:e2b-mt`).
+- `--think` ou `/think [on|off]` : active le raisonnement visible du modèle (désactivé par défaut, sans effet sur l'affichage habituel). Chaque étape s'affiche en `Thought` replié, `Action` et `Observation`. `Ctrl+O` ouvre ou ferme le raisonnement en direct pendant que le modèle réfléchit, et le dernier raisonnement quand ALF-CLI attend une saisie ; `/think show` l'affiche en entier. Le raisonnement n'est ni renvoyé au modèle ni enregistré.
 - `--allowed-dir DIR` : dossier où `read_file`, `list_dir`, `write_file`, `edit_file` et `run_command` ont le droit d'aller (répétable, défaut : dossier courant). Hors de ces dossiers, l'accès est refusé. `run_command` s'exécute dans un conteneur Docker jetable : pas de réseau, seuls ces dossiers sont visibles (tous les `.git` en lecture seule), 512 Mo de mémoire, 1 CPU, 100 processus, 12 s maximum. Sans Docker ou sans l'image, la commande est refusée et rien ne tourne sur la machine. Un filtre sur le texte de la commande s'y ajoute : un chemin absolu comme `/usr/bin/x` est refusé, `/dev/null` est permis. Les fichiers secrets (`.env`, `*.pem`, `*.key`, `id_rsa*`, `credentials*`…, sauf `.env.example`) sont bloqués en lecture (`read_file`, `edit_file`, noms dans `run_command`) et apparaissent vides dans le conteneur. La liste reste courte, et avec `--no-sandbox` le filtre est contournable (`cat .e*` ou `python3 -c ...` passent). `list_dir` liste un dossier sans lire les fichiers. `read_file` refuse les fichiers de plus de 1 Mo et les fichiers binaires.
 - `--max-tokens N` : budget de tokens du contexte envoyé au modèle (`num_ctx` d'Ollama), défaut : le contexte max du modèle Ollama (8192 si inconnu), minimum 4096. C'est le plafond du contexte : une ligne `Context: 0.8k/131.1k (0%)` (en kTokens) s'affiche après chaque tour, avec une alerte à partir de 80 %.
 - `--auto` : `run_command`, `write_file` et `edit_file` s'exécutent sans confirmation (mode `ask` par défaut). `/mode [ask|auto]` ouvre un choix entre `ask` et `auto`, ou change directement le mode.
