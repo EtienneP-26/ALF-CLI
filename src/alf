@@ -55,7 +55,10 @@ if __name__=="__main__":
         outputPrint(f"Conversation resumed: `{conversation['title']}` ({len(state.history)} messages)")
         print('\033[90m' + contextLine(None, state.maxTokens, state.contextMessages(), total=state.totalTokens, hidden=state.conversation['summarizedCount']) + '\033[0m')
     while state.running:
-        prompt = inputPrompt()
+        try:
+            prompt = inputPrompt()
+        except (EOFError, KeyboardInterrupt):
+            break
         message = handleCommand(prompt, state)
         if message is not None:
             if message:
@@ -97,6 +100,10 @@ if __name__=="__main__":
             del state.history[historySize:]
             outputPrint(f"Ollama error, the conversation is unchanged: {e}")
             continue
+        except (KeyboardInterrupt, EOFError):
+            del state.history[historySize:]
+            outputPrint("Turn stopped, the conversation is unchanged.")
+            continue
         except EmptyResponseError as e:
             del state.history[historySize:]
             outputPrint(f"{e} The conversation is unchanged.")
@@ -112,4 +119,7 @@ if __name__=="__main__":
         used = state.contextUsed if state.contextUsed is not None else estimateTokens(context)
         if isNearBudget(used, state.maxTokens):
             outputPrint(f"Warning: the context is over 80% of the budget ({formatKTokens(state.maxTokens)}). Use `/new` or raise `--max-tokens`.")
-    ollama.generate(model=state.model, keep_alive=0)
+    try:
+        client.generate(model=state.model, keep_alive=0)
+    except (ollama.ResponseError, ConnectionError, httpx.HTTPError, KeyboardInterrupt):
+        pass

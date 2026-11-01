@@ -17,7 +17,10 @@ def helpCommand(state, args):
 @command("/model", "Change the model: `/model` to choose, `/model <name>` to set")
 def modelCommand(state, args):
     if not args:
-        state.model = choiceVisual("\nChose a model: ", state.modelNames, state.model)
+        try:
+            state.model = choiceVisual("\nChose a model: ", state.modelNames, state.model)
+        except (EOFError, KeyboardInterrupt):
+            print()
     elif args[0] in state.modelNames:
         state.model = args[0]
     else:
