@@ -1,0 +1,3 @@
+#!/bin/sh
+# Launcher: run ALF-CLI from anywhere, whatever the symlink used to call it.
+exec python3 "$(dirname "$(readlink -f "$0")")/../src/alf" "$@"
