@@ -87,5 +87,3 @@ Liste des features bonus implémentées, avec un lien vers le fichier/la fonctio
 | Nom | Rôle | GitHub |
 |---|---|---|
 | Etienne Pouille | ... | Etiennep-26 |
-| Pierric Buchez | ... | MyEcoria |
-| Maximilien Lachevre Leconte | ... | maxlabinche |
