@@ -90,14 +90,14 @@ kb = KeyBindings()
 @kb.add("enter")
 def _(event):
     """
-    Entrée = envoyer
+    Enter = send
     """
     event.current_buffer.validate_and_handle()
 
 @kb.add("escape", "enter")
 def _(event):
     """
-    Alt+Entrée = nouvelle ligne
+    Alt+Enter = new line
     """
     event.current_buffer.insert_text("\n")
 

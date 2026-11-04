@@ -21,9 +21,9 @@ def web_search(
         with DDGS() as ddgs:
             resultats = ddgs.text(question, max_results=5, region=region, timelimit=timelimit)
     except Exception as e:
-        return [{"Erreur": f"Erreur lors de la recherche : {e}"}]
+        return [{"Error": f"Search failed: {e}"}]
 
     if not resultats:
-        return [{"Erreur": "Aucun résultat pertinent trouvé sur le web."}]
+        return [{"Error": "No relevant result found on the web."}]
 
     return resultats
