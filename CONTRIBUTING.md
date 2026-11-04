@@ -1,43 +1,43 @@
-# Contribuer
+# Contributing
 
-Merci de votre intérêt ! Les contributions sont les bienvenues, selon le
-processus ci-dessous.
+Thanks for your interest! Contributions are welcome, following the
+process below.
 
-## Avant de commencer
+## Before you start
 
-1. **Ouvrez une issue** qui décrit ce que vous voulez faire (nouvelle
-   fonctionnalité, correction, amélioration).
-2. **Attendez la validation** du mainteneur avant de coder.
-3. Demandez un accès au dépôt si vous n'en avez pas (les forks sont
-   interdits par la licence).
+1. **Open an issue** describing what you want to do (new feature, fix,
+   improvement).
+2. **Wait for the maintainer's approval** before writing code.
+3. Ask for access to the repository if you do not have it (forks are
+   forbidden by the license).
 
 ## Workflow
 
-Toutes les branches partent de `dev`, jamais de `main`.
+All branches start from `dev`, never from `main`.
 
 ```bash
 git checkout dev
 git pull origin dev
-git checkout -b feat/nom-court-de-la-fonctionnalite
+git checkout -b feat/short-name-of-the-feature
 ```
 
-Conventions de nommage :
+Naming conventions:
 
-- `feat/...` : nouvelle fonctionnalité
-- `fix/...` : correction de bug
-- `docs/...` : documentation
+- `feat/...`: new feature
+- `fix/...`: bug fix
+- `docs/...`: documentation
 
-Ensuite :
+Then:
 
-1. Faites vos commits (messages clairs, un sujet par commit).
-2. Poussez votre branche : `git push origin feat/nom-court`.
-3. Ouvrez une Pull Request **vers `dev`** (jamais vers `main`) en
-   décrivant ce qui a été fait et en référençant l'issue (`Closes #12`).
-4. Attendez la relecture. Des modifications peuvent être demandées.
+1. Make your commits (clear messages, one topic per commit).
+2. Push your branch: `git push origin feat/short-name`.
+3. Open a Pull Request **against `dev`** (never against `main`),
+   describing what was done and referencing the issue (`Closes #12`).
+4. Wait for review. Changes may be requested.
 
-## Règles
+## Rules
 
-- Une PR = un sujet.
-- Pas de push direct sur `main` ni `dev`.
-- `main` est mise à jour uniquement par le mainteneur, depuis `dev`.
-- En contribuant, vous acceptez l'article 5 de la [LICENSE](./LICENSE).
+- One PR, one topic.
+- No direct pushes to `main` or `dev`.
+- `main` is updated only by the maintainer, from `dev`.
+- By contributing, you accept article 5 of the [LICENCE](./LICENCE).

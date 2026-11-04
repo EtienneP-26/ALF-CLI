@@ -1,45 +1,43 @@
-LICENCE À USAGE PERSONNEL — TOUS DROITS RÉSERVÉS
+PERSONAL USE LICENSE — ALL RIGHTS RESERVED
 
-Copyright (c) 2026 Etienne Pouille. Tous droits réservés.
+Copyright (c) 2026 Etienne Pouille. All rights reserved.
 
-Projet : ALF-CLI
+Project: ALF-CLI
 
-1. USAGE PERSONNEL AUTORISÉ
-   Vous êtes autorisé à télécharger, exécuter et étudier ce logiciel pour
-   un usage strictement personnel, privé et non commercial (apprentissage,
-   projets personnels, loisirs).
+1. PERSONAL USE PERMITTED
+   You are permitted to download, run and study this software for
+   strictly personal, private and non-commercial use (learning, personal
+   projects, leisure).
 
 2. MODIFICATIONS
-   Vous pouvez modifier le code sur votre copie locale pour votre usage
-   personnel. Il est interdit de publier, distribuer ou partager les
-   versions modifiées, sauf via une contribution au dépôt officiel
-   (voir article 5).
+   You may modify the code in your local copy for your personal use. It
+   is forbidden to publish, distribute or share modified versions, except
+   through a contribution to the official repository (see article 5).
 
-3. USAGE EN ENTREPRISE : AUTORISATION PRÉALABLE OBLIGATOIRE
-   Toute utilisation dans un cadre professionnel ou commercial est
-   interdite sans autorisation écrite préalable du titulaire des droits.
-   Cela inclut notamment : l'utilisation par une entreprise, une
-   association, une administration, un employeur ou un client ; l'usage
-   en tant que freelance ; l'intégration dans un produit ou service,
-   gratuit ou payant ; et l'usage en production.
-   Pour obtenir une licence, contactez : contact@etienne-pouille.work.
+3. BUSINESS USE: PRIOR WRITTEN AUTHORIZATION REQUIRED
+   Any use in a professional or commercial context is forbidden without
+   prior written authorization from the rights holder. This includes in
+   particular: use by a company, an association, a public administration,
+   an employer or a client; use as a freelancer; integration into a
+   product or service, whether free or paid; and use in production.
+   To obtain a license, contact: contact@etienne-pouille.work.
 
-4. FORK ET REDISTRIBUTION INTERDITS
-   Il est interdit de créer un fork, un miroir ou une copie publique de ce
-   dépôt, et de redistribuer, publier, sous-licencier ou vendre tout ou
-   partie du code, modifié ou non.
+4. FORKS AND REDISTRIBUTION FORBIDDEN
+   It is forbidden to create a fork, a mirror or a public copy of this
+   repository, and to redistribute, publish, sublicense or sell all or
+   part of the code, whether modified or not.
 
 5. CONTRIBUTIONS
-   Les contributions au dépôt officiel sont acceptées uniquement selon la
-   procédure décrite dans CONTRIBUTING.md. En soumettant une contribution,
-   vous accordez au titulaire des droits une licence mondiale, perpétuelle,
-   gratuite et irrévocable pour l'utiliser, la modifier et la distribuer
-   dans le cadre du projet, y compris sous une autre licence.
+   Contributions to the official repository are accepted only under the
+   procedure described in CONTRIBUTING.md. By submitting a contribution,
+   you grant the rights holder a worldwide, perpetual, royalty-free and
+   irrevocable license to use, modify and distribute it within the
+   project, including under another license.
 
-6. RÉSILIATION
-   Tout manquement à cette licence met fin immédiatement à vos droits.
+6. TERMINATION
+   Any breach of this license immediately ends your rights.
 
-7. ABSENCE DE GARANTIE
-   LE LOGICIEL EST FOURNI « TEL QUEL », SANS GARANTIE D'AUCUNE SORTE. LE
-   TITULAIRE DES DROITS NE PEUT ÊTRE TENU RESPONSABLE DES DOMMAGES
-   RÉSULTANT DE SON UTILISATION.
+7. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE
+   RIGHTS HOLDER CANNOT BE HELD LIABLE FOR ANY DAMAGES RESULTING FROM ITS
+   USE.

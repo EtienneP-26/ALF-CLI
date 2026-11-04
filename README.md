@@ -2,141 +2,141 @@
 
 <h1 align="center">ALF-CLI</h1>
 
-<p align="center"><em>Un agent de développement en ligne de commande, local et privé, propulsé par Ollama.</em></p>
+<p align="center"><em>A local, private command-line development agent, powered by Ollama.</em></p>
 
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white">
-  <img alt="Licence" src="https://img.shields.io/badge/licence-usage%20personnel-red">
+  <img alt="License" src="https://img.shields.io/badge/license-personal%20use-red">
   <img alt="Ollama" src="https://img.shields.io/badge/Ollama-local-black?logo=ollama&logoColor=white">
   <img alt="MCP" src="https://img.shields.io/badge/MCP-compatible-1800f7">
 </p>
 
-## Sommaire
+## Table of contents
 
-- [Fonctionnalités](#fonctionnalités)
-- [Prérequis](#prérequis)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Commandes](#commandes)
+- [Usage](#usage)
+- [Commands](#commands)
 - [Configuration](#configuration)
-- [Sécurité](#sécurité)
+- [Security](#security)
 - [Architecture](#architecture)
 - [Tests](#tests)
-- [Contribuer](#contribuer)
-- [Licence](#licence)
-- [Auteur](#auteur)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
-## Fonctionnalités
+## Features
 
-ALF-CLI (commande `alf`) est un agent conversationnel qui tourne dans votre terminal et utilise un modèle servi par [Ollama](https://ollama.com). Le modèle peut appeler des outils pour agir sur votre projet :
+ALF-CLI (command `alf`) is a conversational agent that runs in your terminal and uses a model served by [Ollama](https://ollama.com). The model can call tools to act on your project:
 
-| Outil | Rôle |
+| Tool | Role |
 | --- | --- |
-| `read_file` | lire un fichier |
-| `write_file` | créer ou écraser un fichier (diff affiché) |
-| `edit_file` | remplacer un morceau de texte dans un fichier |
-| `list_dir` | lister un dossier |
-| `run_command` | exécuter une commande dans un conteneur Docker isolé |
-| `web_search` | recherche web via DuckDuckGo |
-| `plan_task` | annoncer un plan en étapes |
+| `read_file` | read a file |
+| `write_file` | create or overwrite a file (diff shown) |
+| `edit_file` | replace a piece of text in a file |
+| `list_dir` | list a directory |
+| `run_command` | run a command in an isolated Docker container |
+| `web_search` | web search via DuckDuckGo |
+| `plan_task` | announce a plan in steps |
 
-Et aussi :
+Also:
 
-- réponses en streaming rendues en Markdown (rich) ;
-- affichage optionnel du raisonnement du modèle (`--think`) ;
-- conversations sauvegardées, reprenables et renommables ;
-- suivi de la fenêtre de contexte, avec alerte et compactage automatique par résumé des anciens messages ;
-- serveurs MCP (format Claude Desktop) dont les outils sont ajoutés à l'agent ;
-- mode `ask` (confirmation avant chaque action sensible) ou `auto`.
+- streamed responses rendered as Markdown (rich);
+- optional display of the model's reasoning (`--think`);
+- saved, resumable and renamable conversations;
+- context window tracking, with a warning and automatic compaction by summarizing older messages;
+- MCP servers (Claude Desktop format) whose tools are added to the agent;
+- `ask` mode (confirmation before each sensitive action) or `auto`.
 
-## Prérequis
+## Prerequisites
 
-- Python 3.10 ou plus récent
-- [Ollama](https://ollama.com) installé et lancé, avec au moins un modèle téléchargé (par défaut `gemma4:e2b-mt`)
-- [Docker](https://www.docker.com) pour le bac à sable de `run_command` (sinon utilisez `--no-sandbox`)
-- `uvx` (outil `uv`) si vous gardez le serveur MCP `time` de `mcp_servers.json`
+- Python 3.10 or newer
+- [Ollama](https://ollama.com) installed and running, with at least one model downloaded (default `gemma4:e2b-mt`)
+- [Docker](https://www.docker.com) for the `run_command` sandbox (otherwise use `--no-sandbox`)
+- `uvx` (`uv` tool) if you keep the `time` MCP server from `mcp_servers.json`
 
 ## Installation
 
 ```bash
-git clone <url-du-depot> ALF-CLI
+git clone <repository-url> ALF-CLI
 cd ALF-CLI
 pip install -r requirements.txt
 
-# image du bac à sable utilisée par run_command
+# sandbox image used by run_command
 docker build -t alf-sandbox .
 
-# modèle par défaut
+# default model
 ollama pull gemma4:e2b-mt
 
-# (optionnel) rendre la commande `alf` disponible partout
+# (optional) make the `alf` command available everywhere
 sudo ln -s "$PWD/bin/alf" /usr/local/bin/alf
 ```
 
-Le lanceur `bin/alf` exécute `src/alf` quel que soit l'endroit d'où il est appelé.
+The launcher `bin/alf` runs `src/alf` wherever it is called from.
 
-## Utilisation
+## Usage
 
 ```bash
-alf                                   # nouvelle conversation dans le dossier courant
-alf --model qwen3:8b --think          # autre modèle, avec le raisonnement affiché
-alf --continue                        # rouvrir la dernière conversation
-alf --resume 2                        # rouvrir la conversation n°2 de /conversations
+alf                                   # new conversation in the current folder
+alf --model qwen3:8b --think          # another model, with reasoning shown
+alf --continue                        # reopen the last conversation
+alf --resume 2                        # reopen conversation no. 2 in /conversations
 alf --allowed-dir ~/projet --allowed-dir ~/notes
-alf --auto                            # ne rien demander avant d'agir
-alf --no-sandbox                      # commandes directement sur la machine (risqué)
-alf --mcp-config ./mcp_servers.json   # utiliser un fichier MCP précis
+alf --auto                            # do not ask before acting
+alf --no-sandbox                      # commands run directly on the machine (risky)
+alf --mcp-config ./mcp_servers.json   # use a specific MCP file
 ```
 
-Options de `alf --help` :
+Options of `alf --help`:
 
 | Option | Description |
 | --- | --- |
-| `--continue` | rouvrir la dernière conversation |
-| `--resume ID_OR_NUMBER` | rouvrir une conversation par id ou par son numéro dans `/conversations` |
-| `--max-tokens N` | budget de contexte envoyé au modèle (`num_ctx`), minimum 4096 ; par défaut la longueur de contexte du modèle, sinon 8192 |
-| `--model NAME` | modèle Ollama (défaut : `gemma4:e2b-mt`) |
-| `--think` | afficher le raisonnement du modèle, s'il le supporte |
-| `--auto` | exécuter les commandes et écrire les fichiers sans demander |
-| `--allowed-dir DIR` | dossier accessible aux outils (répétable, défaut : dossier courant) |
-| `--no-sandbox` | exécuter les commandes sans Docker |
-| `--mcp-config FILE` | configuration MCP, remplace `$ALF_HOME/mcp_servers.json` |
+| `--continue` | reopen the last conversation |
+| `--resume ID_OR_NUMBER` | reopen a conversation by id or by its number in `/conversations` |
+| `--max-tokens N` | context budget sent to the model (`num_ctx`), minimum 4096; by default the model's context length, otherwise 8192 |
+| `--model NAME` | Ollama model (default: `gemma4:e2b-mt`) |
+| `--think` | show the model's reasoning, if it supports it |
+| `--auto` | run commands and write files without asking |
+| `--allowed-dir DIR` | folder accessible to the tools (repeatable, default: current folder) |
+| `--no-sandbox` | run commands without Docker |
+| `--mcp-config FILE` | MCP configuration, replaces `$ALF_HOME/mcp_servers.json` |
 
-`--continue` et `--resume` sont mutuellement exclusifs.
+`--continue` and `--resume` are mutually exclusive.
 
-## Commandes
+## Commands
 
-Tapez-les dans l'invite de `alf` :
+Type them at the `alf` prompt:
 
-| Commande | Effet |
+| Command | Effect |
 | --- | --- |
-| `/help` | lister les commandes |
-| `/exit` | quitter |
-| `/model [nom]` | choisir un modèle (menu sans argument) |
-| `/mode [ask\|auto]` | choisir le mode de confirmation |
-| `/think [on\|off\|show]` | activer le raisonnement, ou afficher le dernier |
-| `/new` | démarrer une nouvelle conversation |
-| `/rename <titre>` | renommer la conversation courante |
-| `/conversations` | lister les conversations sauvegardées, la plus récente d'abord |
-| `/resume <numéro>` | reprendre une conversation |
-| `/delete <numéro>` | supprimer une conversation (avec confirmation) |
+| `/help` | list the commands |
+| `/exit` | quit |
+| `/model [name]` | choose a model (menu when no argument is given) |
+| `/mode [ask\|auto]` | choose the confirmation mode |
+| `/think [on\|off\|show]` | turn on reasoning, or show the last one |
+| `/new` | start a new conversation |
+| `/rename <title>` | rename the current conversation |
+| `/conversations` | list saved conversations, most recent first |
+| `/resume <number>` | resume a conversation |
+| `/delete <number>` | delete a conversation (with confirmation) |
 
 ## Configuration
 
-### Variables d'environnement
+### Environment variables
 
-| Variable | Rôle | Défaut |
+| Variable | Role | Default |
 | --- | --- | --- |
-| `ALF_HOME` | dossier de données (conversations, `mcp_servers.json`) | `~/.alf` |
-| `OLLAMA_HOST` | adresse du serveur Ollama | `http://localhost:11434` |
+| `ALF_HOME` | data folder (conversations, `mcp_servers.json`) | `~/.alf` |
+| `OLLAMA_HOST` | address of the Ollama server | `http://localhost:11434` |
 
-Les conversations sont stockées en JSON dans `$ALF_HOME/conversations/`.
+Conversations are stored as JSON in `$ALF_HOME/conversations/`.
 
-### Serveurs MCP
+### MCP servers
 
-ALF-CLI lit `$ALF_HOME/mcp_servers.json` (ou le fichier donné par `--mcp-config`) au format Claude Desktop. Les outils de chaque serveur sont exposés au modèle sous le nom `<serveur>__<outil>`. Un serveur invalide ou en échec est signalé et ignoré, sans bloquer le démarrage.
+ALF-CLI reads `$ALF_HOME/mcp_servers.json` (or the file given by `--mcp-config`) in Claude Desktop format. The tools of each server are exposed to the model under the name `<server>__<tool>`. An invalid or failing server is reported and skipped, without blocking startup.
 
-Exemple fourni dans `mcp_servers.json` :
+Example provided in `mcp_servers.json`:
 
 ```json
 {
@@ -147,37 +147,37 @@ Exemple fourni dans `mcp_servers.json` :
 }
 ```
 
-`devtools` est un petit serveur du dépôt dont l'outil `find_todos` liste les commentaires TODO et FIXME du dossier courant.
+`devtools` is a small server in the repository whose `find_todos` tool lists the TODO and FIXME comments in the current folder.
 
-## Sécurité
+## Security
 
-- **Dossiers autorisés** : les outils fichiers et `run_command` ne sortent pas des dossiers donnés par `--allowed-dir` (dossier courant par défaut).
-- **Fichiers secrets** (`.env`, `*.pem`, `*.key`, `id_rsa*`, `credentials*`, etc.) : accès refusé.
-- **Bac à sable** : `run_command` lance un conteneur `alf-sandbox` jetable, sans réseau, système de fichiers en lecture seule, 512 Mo de mémoire, 1 CPU, 100 processus maximum, toutes les capacités retirées, `.git` en lecture seule, secrets masqués, délai de 12 s. Si l'image ou Docker est absent, la commande est refusée.
-- **Mode `ask`** : une confirmation est demandée avant d'agir ; `--auto` ou `/mode auto` la désactive.
+- **Allowed folders**: the file tools and `run_command` do not go outside the folders given by `--allowed-dir` (current folder by default).
+- **Secret files** (`.env`, `*.pem`, `*.key`, `id_rsa*`, `credentials*`, etc.): access denied.
+- **Sandbox**: `run_command` starts a disposable `alf-sandbox` container with no network, a read-only file system, 512 MB of memory, 1 CPU, at most 100 processes, all capabilities dropped, `.git` read-only, secrets hidden, and a 12 s timeout. If the image or Docker is missing, the command is refused.
+- **`ask` mode**: confirmation is requested before acting; `--auto` or `/mode auto` turns it off.
 
 ## Architecture
 
 ```text
 .
-├── bin/alf                 # lanceur
+├── bin/alf                 # launcher
 ├── src/
-│   ├── alf                 # point d'entrée et boucle principale
-│   ├── Variables.py        # logo, outils disponibles, constantes de contexte
-│   ├── Context.py          # estimation et affichage de l'usage du contexte
-│   ├── Memory.py           # sauvegarde des conversations (ALF_HOME)
-│   ├── HandleResponse.py   # gestion des réponses et appels d'outils
+│   ├── alf                 # entry point and main loop
+│   ├── Variables.py        # logo, available tools, context constants
+│   ├── Context.py          # context usage estimation and display
+│   ├── Memory.py           # saving conversations (ALF_HOME)
+│   ├── HandleResponse.py   # handling responses and tool calls
 │   ├── AlfTools/           # read/write/edit, run_command, web_search, plan_task,
-│   │                       # permissions, client MCP
-│   ├── CliTools/           # arguments et affichage (rich, prompt_toolkit)
-│   ├── Commands/           # commandes slash (/help, /model, ...)
-│   ├── OllamaTools/        # connexion, flux, modèles, résumé du contexte
-│   └── McpServers/         # serveur MCP d'exemple (devtools)
-├── tests/                  # tests pytest
+│   │                       # permissions, MCP client
+│   ├── CliTools/           # arguments and display (rich, prompt_toolkit)
+│   ├── Commands/           # slash commands (/help, /model, ...)
+│   ├── OllamaTools/        # connection, streaming, models, context summary
+│   └── McpServers/         # example MCP server (devtools)
+├── tests/                  # pytest tests
 ├── docs/                   # documentation
 ├── assets/logo.png
-├── mcp_servers.json        # exemple de configuration MCP
-├── Dockerfile              # image alf-sandbox
+├── mcp_servers.json        # example MCP configuration
+├── Dockerfile              # alf-sandbox image
 └── docker-compose.yml
 ```
 
@@ -188,14 +188,14 @@ pip install -r requirements.txt
 pytest -q
 ```
 
-## Contribuer
+## Contributing
 
-Les contributions passent par une issue validée puis une branche partant de `dev`. Les règles complètes sont dans [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions go through a validated issue, then a branch created from `dev`. The full rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licence
+## License
 
-Usage personnel, tous droits réservés. Voir le fichier [LICENCE](LICENCE).
+Personal use only, all rights reserved. See the [LICENCE](LICENCE) file.
 
-## Auteur
+## Author
 
-Etienne Pouille — [GitHub : EtienneP-26](https://github.com/EtienneP-26)
+Etienne Pouille — [GitHub: EtienneP-26](https://github.com/EtienneP-26)
